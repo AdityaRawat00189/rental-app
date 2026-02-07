@@ -1,17 +1,52 @@
 # 🏠 Rental App
 
 A college rental platform built with **Node.js**, **Express**, **MongoDB**, and **React (Vite)**.  
-Features include secure signup, OTP/email verification, image uploads via Cloudinary, and JWT-based authentication.
+
+Campus-Link is a hyper-local, student-to-student sharing economy platform built to eliminate the high cost of "one-semester" college essentials. It allows students to monetize idle belongings like engineering tools, lab gear, and books by renting them to peers within their own campus ecosystem.
 
 ---
 
 ## 🚀 Features
-- User authentication (JWT + bcrypt)
-- Email verification with OTP (Nodemailer)
-- Image upload and storage (Cloudinary)
-- Modern frontend with React + Vite
-- Secure environment variable management (`.env`)
+🎓 College-Specific Scoping: Users only see items available within their own college. The marketplace is automatically filtered based on the user's verified college domain.
+
+🔐 Academic Verification: Registration is restricted to users with verified college emails (.edu, .ac.in), ensuring a trusted community.
+
+📸 Multi-Image Support: Professional image processing pipeline using Multer and Cloudinary for high-quality product galleries.
+
+🛡️ Secure Transactions: JWT-based authentication with custom middleware to protect user data and listing ownership.
+
+📊 Status Management: Real-time tracking of item availability (Available, Booked, Under Maintenance, Hidden).
+
+💼 Dashboard: Dedicated views for "My Lended Items" and "My Rental Requests."
 
 ---
 
+## 💻 Tech Stack
+Backend: "Node.js, Express.js"
+Database: MongoDB (Mongoose ODM)
+Auth: "JSON Web Tokens (JWT), Bcrypt.js"
+Files: "Multer, Cloudinary API"
+Validation: Custom Domain-locking & OTP Verification
+
 ## 📂 Project Structure
+
+## 🗺️ API Endpoints
+
+🔑 Authentication (/api/auth):
+
+   1. POST: /signup,Register new student (Domain locked), Public
+   2. POST: /verify-otp,Verify email via 6-digit OTP, Public
+   3. POST: /resend-otp,Resend 6-digit OTP to email, Public
+   4. POST: /login,Authenticate user & get Token, Public
+
+📦 Item Management (/api/items):
+   1. GET: id ,Get full details of a specific item, Private
+   2. GET: my-items, Get all items listed by the current user, Private
+   3. POST: create, Create a new listing (Supports multi-image(max 5 images)), Private
+   4. PUT: id, Update a listing (Owner only), Private
+   5. DELETE: id, Remove a listing & *Cloudinary images, Private
+
+
+🤝 Booking System (/api/bookings): 
+
+## 🛠️ Installation & Setup
