@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+:root {
+    --primary-color: #1C2E4A;  /* Use for Headers, Footers, and Primary Buttons. */
+    --accent-color: #F2B82E;   /* Use for CTAs (Call to Actions) and Highlights. */
+    --card-shadow : shadow-md;
+    --border-radius : rounded-xl;
+}

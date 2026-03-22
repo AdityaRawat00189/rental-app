@@ -54,6 +54,29 @@ const getMyLendedItems = async(req,res) => {
     }
 };
 
+const getItems = async(req,res) => {
+    try {
+        const {category} = req.query;
+        const query = {
+            status: 'Available',
+            owner: {$ne : req.user._id}
+        }
+        if(category && category !== 'All') {
+            query.category = category;
+        }
+
+        const items = await Item.find(query).sort({createdAt: -1}).populate('owner');
+        // console.log(items);
+        return res.status(200).json({
+            success: true,
+            count: items.length,
+            items,
+        })
+    } catch (error) {
+        return res.status(500).json({message: "Failed to Fetch Items", error: error.message});
+    }
+}
+
 const getItemById = async(req,res) => {
     try {
         const item = await Item.findById(req.params.id).populate('owner', 'name email hostel roomNumber phoneNumber');
@@ -147,4 +170,5 @@ module.exports = {
     getItemById,
     deleteItem,
     updateItem,
+    getItems,
 }

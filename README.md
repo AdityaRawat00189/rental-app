@@ -50,3 +50,36 @@ Validation: Custom Domain-locking & OTP Verification
 🤝 Booking System (/api/bookings): 
 
 ## 🛠️ Installation & Setup
+
+
+## Routes Required
+🔑 Authentication (/api/auth):
+
+   1. POST: /signup,Register new student (Domain locked), Public, completed
+   2. POST: /verify-otp,Verify email via 6-digit OTP, Public, completed
+   3. POST: /resend-otp,Resend 6-digit OTP to email, Public, completed
+   4. POST: /login,Authenticate user & get Token, Public, completed
+   5. POST: /google-login,Authenticate user without ID and Password(Google OAuth), Public, Prending
+
+📦 Item Management (/api/items):
+
+   1. GET: /id ,Get full details of a specific item, Private, completed
+   2. GET: /my-items, Get all items listed by the current user, Private, completed
+   3. POST: /create, Create a new listing (Supports multi-image(max 5 images)), Private, completed
+   4. PUT: /id, Update a listing (Owner only), Private, completed
+   5. DELETE: /id, Remove a listing & *Cloudinary images, Private, completed
+   <!-- 6. GET: /lended-items, Get all Booked items of User with lender Info, Private, Pending -->
+   
+🤝 Booking System (/api/bookings): 
+   1. 
+
+🤝  System (/api/bookings): 
+
+## Features
+Add msg send with req ,on booking item
+Automate a msg to gmail, to lender and owner using `CRON` before 36 hours after 12 hours each
+View All Lended items with deadline by the lender
+Add 1-1 personal Messaging feature
+Add Rating Route,active after deadline (for lender , renter, item)
+Add OTP verify before handling the item(to screen not on email)
+Add filter by categories

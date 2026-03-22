@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router();
-const {createItem, getMyLendedItems, getItemById, deleteItem, updateItem} = require('../controllers/itemController')
+const {createItem, getMyLendedItems, getItemById, deleteItem, updateItem, getItems} = require('../controllers/itemController')
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -8,7 +8,10 @@ const upload = require('../middleware/uploadMiddleware');
 // '5' is the maximum number of images allowed
 router.post('/create', protect, upload.array('images',5), createItem);
 
-// For All Iems
+// For All Items
+router.get('/', protect, getItems);
+
+// For All My Lended Items
 router.get('/my-items', protect, getMyLendedItems);
 
 // For Single Item

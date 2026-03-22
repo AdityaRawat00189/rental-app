@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Email = require('../models/Email');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/sendEmail');
@@ -12,16 +13,25 @@ function generateToken(id){
 
 const registerUser = async (req,res) => {
     try {
-        const {name, email, password, collegeName, hostel, roomNumber} = req.body;
+        const {name, email, password, collegeName, hostel, roomNumber, otp} = req.body;
+        // console.log(name, email, password, collegeName, hostel, roomNumber, otp);
 
         // 1. Basic Validation (rooNumber is Optional)
-        if(!name || !email || !password || !collegeName || !hostel) {
+        if(!name || !email || !password || !collegeName || !hostel || !otp || !roomNumber) {
             return res.status(400).json({message : "Please Fill all mandatory fields"});
         }
         
         //1.1 Check email ends with .ac.in or .edu
 
+        // 1.2 Check email otp is correct or not;
+        const emailRecord = await Email.findOne({email});
+        // console.log(emailRecord);
+        if(!emailRecord || emailRecord.otp !== otp || emailRecord.otpExpires < Date.now()) {
+            return res.status(400).json({message: "Invalid or expired OTP"});
+        }
+        await Email.findOneAndDelete({email});
 
+        // console.log("Successfully OTP Verified");
         // 2. Check user is already exists or not  
         // ( 409 : Conflict with the current state of the resource )
         const userExists = await User.findOne({ email });
@@ -29,12 +39,12 @@ const registerUser = async (req,res) => {
             return res.status(409).json({message : "User already exists"})
         }
 
-        // 3. Create the user and Generate OTP 
-
-        const otp = Math.floor(100000 + Math.random()*900000).toString(); 
-
+        // // 3. Create the user and Generate OTP 
+        
+        // const otp = Math.floor(100000 + Math.random()*900000).toString();
+        
         // console.log(otp);
-
+        
         const user = await User.create({
             name,
             email,
@@ -42,18 +52,16 @@ const registerUser = async (req,res) => {
             collegeName,
             hostel,
             roomNumber,
-            otp,
-            otpExpires: Date.now() + 15*60*1000, // expires in 15 min
+            isVerified: true,
+            otp:"",
+            otpExpires: null, // expires in 15 min
         });
+
+        // console.log("Successfully User Created");
         // console.log("2");
-        await sendEmail({
-            email: user.email,
-            subject: 'Your College Rental Verification Code',
-            message: `Your OTP is ${otp}. It expires in 15 minutes`,
-        });
         
         // 4. Attach JWT token and return back;
-        
+        // console.log("HII");
         return res.status(201).json({
             _id: user._id,
             name: user.name,
@@ -69,23 +77,26 @@ const registerUser = async (req,res) => {
 
 const resendOTP = async (req,res) => {
     try {
+        // console.log("Resend OTP Called");
         const {email} = req.body;
-        const user = await User.findOne({email});
+        const user = await Email.findOne({email});
 
-        if(!user) {
-            return res.status(404).json({message: "User not Found"});
-        }
+        // if(!user) {
+        //     return res.status(404).json({message: "User not Found"});
+        // }
 
-        if(user.isVerified){
-            return res.status(400).json({message: "This Account is already verified.Please Login"});
-        }
+        const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const newOTP = Math.floor(100000 + Math.random() * 90000).toString();
+        // await sendEmail({
+        //     email: user.email,
+        //     subject: 'Your College Rental Verification Code',
+        //     message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
+        // });
 
-        const updatedUser = await User.findOneAndUpdate({email},{
+        const updatedUser = await Email.findOneAndUpdate({email},{
             otp: newOTP,
             otpExpires: Date.now() + 15*60*1000
-        },{new: true});
+        },{new: true, upsert: true});
         // user.otp = newOTP;
         // user.otpExpires = Date.now() + 15*60*1000;
         // console.log("1")
@@ -97,10 +108,10 @@ const resendOTP = async (req,res) => {
             message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
         })
 
-        return res.status(200).json({message: "OTP resent successfully!"});
+        return res.status(200).json({message: "OTP  sent successfully!"});
 
     } catch (error) {
-        res.status(500).json({message: "Failed to resend OTP",error: error.message});
+        res.status(500).json({message: "Failed to  send OTP",error: error.message});
     }
 }
 

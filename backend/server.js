@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 
 const connectDB = require('./config/db');
 require('dotenv').config();
@@ -8,6 +9,7 @@ require('dotenv').config();
 // User Defined Routes
 const authRoutes = require('./routes/authRoutes');
 const itemRoutes = require('./routes/itemRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 const {protect} = require('./middleware/authMiddleware');
 
 // 1. Load environment variables (Not setup )
@@ -21,6 +23,9 @@ connectDB();
 // Parse JSON bodies
 app.use(express.json());
 
+// Enables CORS for all routes
+app.use(cors());
+
 // Parse URL-encoded bodies (form submissions)
 app.use(express.urlencoded({extended: true}));
 
@@ -31,6 +36,7 @@ app.get('/',(req,res) => {
 // 4. Define Routes
 app.use('/api/auth',authRoutes);
 app.use('/api/item',protect,itemRoutes);
+// app.use('/api/booking',protect,bookingRoutes);
 
 app.listen(3000, ()=>{
     console.log('🚀 Server is running on port 3000');

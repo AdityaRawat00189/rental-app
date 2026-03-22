@@ -9,6 +9,7 @@ const {registerUser, verifyOTP, resendOTP, loginUser} = require('../controllers/
 // Authentication Routes
 
 router.post('/signup', registerUser);
+router.post('/generate-otp',resendOTP);
 router.post('/resend-otp', resendOTP)
 router.post('/verify-otp',verifyOTP);
 
