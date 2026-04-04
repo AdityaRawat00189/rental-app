@@ -65,6 +65,9 @@ const Home = () => {
               <Sparkles size={14} className="text-[#F2B82E] animate-pulse" />
               <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.4em]">Live Database</span>
             </div>
+            <button onClick={() => Navigate('/lend')} className="text-[#F2B82E] text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:text-white transition-colors">
+              Lend Your Gear <ArrowRight size={14} />
+            </button>
             <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-none uppercase">
               Current <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F2B82E] to-white/20">Assets.</span>
             </h2>

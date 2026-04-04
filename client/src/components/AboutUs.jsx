@@ -27,7 +27,7 @@ const AboutUs = () => {
       {/* 1. Parallax Background Text */}
       <motion.div 
         initial={{ x: -100, opacity: 0 }}
-        whileInView={{ x: 0, opacity: 0.02 }}
+        whileInView={{ x: 0, opacity: 0.04 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
         className="absolute top-20 left-10 text-[25vw] font-black leading-none select-none pointer-events-none uppercase"
       >

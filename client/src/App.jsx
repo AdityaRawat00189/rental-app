@@ -11,6 +11,7 @@ import Login from './pages/Login'
 import Home2 from './pages/Home2'
 import ProductDetail from './pages/ProductDetail'
 import LendItem from './pages/LendItem'
+import Dashboard from './pages/Dashboard';
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
           <Route path='/lend' element={<LendItem></LendItem>}></Route>
           <Route path='/login' element={<Login></Login>}></Route>
           <Route path='/signup' element={<Signup></Signup>}></Route>
+          <Route path='/dashboard' element={<Dashboard></Dashboard>}></Route>
         </Routes>
       </div>
     </Router>

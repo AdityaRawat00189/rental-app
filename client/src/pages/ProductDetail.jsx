@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 import BrandSlider from '../components/BrandSlider';
-import ChatDrawer from '../components/ChatDrawer';
+// import ChatDrawer from '../components/ChatDrawer';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -16,6 +16,25 @@ const ProductDetail = () => {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isChatOpen , setChatOpen] = useState(false);
+
+  const handleRent = async (item) => {
+    const user = localStorage.getItem('user');
+    if(!user) {
+      navigate('/login');
+      return;
+    }
+    try {
+      const token = user ? JSON.parse(user).token : null;
+      console.log("Initiating booking for item:", item._id, "with token:", token);
+      await axios.post(`http://localhost:3000/api/booking/create/${item._id}`, {} , {
+        headers: {Authorization : `Bearer ${token}`},
+      })
+      alert("Rental Initialized! Please check your dashboard for details.");
+      navigate('/dashboard');
+    } catch (error) {
+      alert("Protocol Error: Rental Initialization Failed");
+    }
+  }
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -143,13 +162,13 @@ const ProductDetail = () => {
               <motion.button 
                 whileHover={{ scale: 1.02, backgroundColor: "#fff" }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-[#F2B82E] text-black py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] flex items-center justify-center gap-4 transition-all shadow-[0_20px_40px_rgba(242,184,46,0.1)]" onClick={() => setChatOpen(true)}
+                className="w-full bg-[#F2B82E] text-black py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] flex items-center justify-center gap-4 transition-all shadow-[0_20px_40px_rgba(242,184,46,0.1)]" onClick = {() => handleRent(item)} 
               >
                 Initialize Exchange
                 <Zap size={18} fill="currentColor" />
               </motion.button>
 
-              <button className="w-full py-6 border border-white/10 rounded-[2rem] text-white/40 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/5 hover:text-white transition-all flex items-center justify-center gap-4">
+              <button className="w-full py-6 border border-white/10 rounded-[2rem] text-white/40 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/5 hover:text-white transition-all flex items-center justify-center gap-4" onClick={() => setChatOpen(true)}>
                 Chat with Lender
                 <MessageSquare size={16} />
               </button>
