@@ -34,7 +34,7 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      await axios.post('http://localhost:3000/api/auth/generate-otp', { email: formData.email });
+      await axios.post('https://rental-app-1-zfws.onrender.com/api/auth/generate-otp', { email: formData.email });
       setOtpSent(true);
       setError("");
     } catch (err) {
@@ -49,7 +49,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/signup', formData);
+      const response = await axios.post('https://rental-app-1-zfws.onrender.com/api/auth/signup', formData);
       if (response.status === 201) {
         localStorage.setItem('user', JSON.stringify(response.data));
         navigate('/home2');

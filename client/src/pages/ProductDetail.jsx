@@ -26,7 +26,7 @@ const ProductDetail = () => {
     try {
       const token = user ? JSON.parse(user).token : null;
       console.log("Initiating booking for item:", item._id, "with token:", token);
-      await axios.post(`http://localhost:3000/api/booking/create/${item._id}`, {} , {
+      await axios.post(`https://rental-app-1-zfws.onrender.com/api/booking/create/${item._id}`, {} , {
         headers: {Authorization : `Bearer ${token}`},
       })
       alert("Rental Initialized! Please check your dashboard for details.");
@@ -45,7 +45,7 @@ const ProductDetail = () => {
             return;
         }
         const token = user ? JSON.parse(user).token : null;
-        const response = await axios.get(`http://localhost:3000/api/item/${id}`, {
+        const response = await axios.get(`https://rental-app-1-zfws.onrender.com/api/item/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         // console.log("Fetched Item Details:", response.data.item);

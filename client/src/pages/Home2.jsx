@@ -17,7 +17,7 @@ const Home = () => {
       try {
         const user = localStorage.getItem('user');
         const token = user ? JSON.parse(user).token : null;
-        const response = await axios.get('http://localhost:3000/api/item/', {
+        const response = await axios.get('https://rental-app-1-zfws.onrender.com/api/item/', {
           headers: { Authorization: `Bearer ${token}` },
           category : 'All',
         });

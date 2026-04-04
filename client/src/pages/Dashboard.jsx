@@ -19,7 +19,7 @@ const Dashboard = () => {
     try {
       const token = currentUser?.token;
       // Backend route update: /api/booking/status/:id
-      const res = await axios.patch(`http://localhost:3000/api/booking/status/${bookingId}`, 
+      const res = await axios.patch(`https://rental-app-1-zfws.onrender.com/api/booking/status/${bookingId}`, 
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -43,7 +43,7 @@ const Dashboard = () => {
         const token = currentUser?.token;
         if (!token) return;
 
-        const res = await axios.get('http://localhost:3000/api/booking/dashboard', {
+        const res = await axios.get('https://rental-app-1-zfws.onrender.com/api/booking/dashboard', {
           headers: { Authorization: `Bearer ${token}` }
         });
 

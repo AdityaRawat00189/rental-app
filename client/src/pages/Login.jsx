@@ -23,7 +23,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', formData);
+      const response = await axios.post('https://rental-app-1-zfws.onrender.com/api/auth/login', formData);
       if (response.data.token) {
         localStorage.setItem('user', JSON.stringify(response.data));
         navigate('/'); // Navigation to neutral route

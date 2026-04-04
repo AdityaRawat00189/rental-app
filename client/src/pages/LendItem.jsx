@@ -52,7 +52,7 @@ const LendItem = () => {
         data.append('images', file);
       });
 
-      const res = await axios.post('http://localhost:3000/api/item/create', data, {
+      const res = await axios.post('https://rental-app-1-zfws.onrender.com/api/item/create', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
