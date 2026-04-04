@@ -103,11 +103,11 @@ const resendOTP = async (req,res) => {
         // await user.save();
         
         // OTP SEND TO EMAIL
-        // await sendEmail({
-        //     email: user.email,
-        //     subject: 'Your College Rental Verification Code',
-        //     message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
-        // })
+        await sendEmail({
+            email: user.email,
+            subject: 'Your College Rental Verification Code',
+            message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
+        })
 
         return res.status(200).json({message: "OTP  sent successfully!"});
 
