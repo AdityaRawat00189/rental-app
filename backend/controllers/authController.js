@@ -79,6 +79,7 @@ const resendOTP = async (req,res) => {
     try {
         // console.log("Resend OTP Called");
         const {email} = req.body;
+        console.log("Resend OTP Called for email:", email);
         const user = await Email.findOne({email});
 
         // if(!user) {
@@ -87,11 +88,38 @@ const resendOTP = async (req,res) => {
 
         const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // await sendEmail({
-        //     email: user.email,
-        //     subject: 'Your College Rental Verification Code',
-        //     message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
-        // });
+        // 🎨 THE PROFESSIONAL HTML TEMPLATE
+        const htmlTemplate = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eeeeee;">
+                <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #F2B82E;">
+                    <h2 style="color: #333333; margin: 0;">CampusLink</h2>
+                </div>
+                
+                <div style="padding: 30px 20px; text-align: center; background-color: #ffffff; border-radius: 8px; margin-top: 20px;">
+                    <p style="color: #666666; font-size: 16px; margin-bottom: 10px;">Hello,</p>
+                    <p style="color: #333333; font-size: 18px; font-weight: bold; margin-bottom: 20px;">Your verification code is:</p>
+                    
+                    <div style="background-color: #F8F9FA; border: 2px dashed #F2B82E; padding: 15px 30px; display: inline-block; border-radius: 6px; letter-spacing: 5px;">
+                        <h1 style="color: #050505; font-size: 36px; margin: 0;">${newOTP}</h1>
+                    </div>
+                    
+                    <p style="color: #999999; font-size: 14px; margin-top: 30px;">This code will expire in <strong>15 minutes</strong>.</p>
+                    <p style="color: #999999; font-size: 14px;">If you did not request this code, please ignore this email.</p>
+                </div>
+                
+                <div style="text-align: center; padding-top: 20px; color: #aaaaaa; font-size: 12px;">
+                    <p>&copy; ${new Date().getFullYear()} CampusLink Team. All rights reserved.</p>
+                </div>
+            </div>
+        `;
+
+        // OTP SEND TO EMAIL
+        await sendEmail({
+            email: email,
+            subject: 'Your College Rental Verification Code',
+            message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
+            html: htmlTemplate
+        });
 
         const updatedUser = await Email.findOneAndUpdate({email},{
             otp: newOTP,
@@ -102,13 +130,6 @@ const resendOTP = async (req,res) => {
         // console.log("1")
         // await user.save();
         
-        // OTP SEND TO EMAIL
-        await sendEmail({
-            email: user.email,
-            subject: 'Your College Rental Verification Code',
-            message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
-        })
-
         return res.status(200).json({message: "OTP  sent successfully!"});
 
     } catch (error) {

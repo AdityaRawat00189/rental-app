@@ -3,8 +3,9 @@ const app = express();
 const cors = require('cors');
 
 const connectDB = require('./config/db');
-require('dotenv').config();
+const dotenv = require('dotenv');
 
+dotenv.config();
 
 // User Defined Routes
 const authRoutes = require('./routes/authRoutes');
@@ -12,8 +13,9 @@ const itemRoutes = require('./routes/itemRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const {protect} = require('./middleware/authMiddleware');
 
-// 1. Load environment variables (Not setup )
-// dotenv.config();
+// Change before deployment to production URL
+// const url = process.env.FRONTEND_URL;
+const url = process.env.FRONTEND_URL;
 
 // 2. Connect to local database
 connectDB();
@@ -25,7 +27,7 @@ app.use(express.json());
 
 // Enables CORS for all routes
 app.use(cors({
-  origin: 'https://mycampuslink.vercel.app',
+  origin: url,
   credentials: true
 }));
 

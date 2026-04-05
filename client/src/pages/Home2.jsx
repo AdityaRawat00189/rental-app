@@ -17,10 +17,14 @@ const Home = () => {
       try {
         const user = localStorage.getItem('user');
         const token = user ? JSON.parse(user).token : null;
-        const response = await axios.get('https://rental-app-1-zfws.onrender.com/api/item/', {
+
+        const BASE_URL = import.meta.env.VITE_BASE_URL;
+        console.log('Fetching items with token:', token);
+        const response = await axios.get(`${BASE_URL}/api/item`, {
           headers: { Authorization: `Bearer ${token}` },
-          category : 'All',
+          category: 'All'
         });
+        console.log("Backend response:", response.data);
         setItems(response.data.items);
       } catch (error) {
         console.error("Error fetching items:", error);

@@ -3,7 +3,9 @@ import io from 'socket.io-client';
 import { Send, X, MessageCircle, Clock } from 'lucide-react';
 
 // Connect to your Node.js backend
-const socket = io.connect('https://rental-app-1-zfws.onrender.com');
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+const socket = io.connect(BASE_URL);
 
 const ChatDrawer = ({ itemId, itemName, currentUser, isOpen, onClose }) => {
   const [message, setMessage] = useState("");

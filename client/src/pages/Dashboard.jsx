@@ -19,7 +19,9 @@ const Dashboard = () => {
     try {
       const token = currentUser?.token;
       // Backend route update: /api/booking/status/:id
-      const res = await axios.patch(`https://rental-app-1-zfws.onrender.com/api/booking/status/${bookingId}`, 
+
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      const res = await axios.patch(`${BASE_URL}/api/booking/status/${bookingId}`, 
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -43,7 +45,8 @@ const Dashboard = () => {
         const token = currentUser?.token;
         if (!token) return;
 
-        const res = await axios.get('https://rental-app-1-zfws.onrender.com/api/booking/dashboard', {
+        const BASE_URL = import.meta.env.VITE_BASE_URL;
+        const res = await axios.get(`${BASE_URL}/api/booking/dashboard`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

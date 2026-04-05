@@ -52,7 +52,8 @@ const LendItem = () => {
         data.append('images', file);
       });
 
-      const res = await axios.post('https://rental-app-1-zfws.onrender.com/api/item/create', data, {
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      const res = await axios.post(`${BASE_URL}/api/item/create`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`

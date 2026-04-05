@@ -56,6 +56,7 @@ const getMyLendedItems = async(req,res) => {
 
 const getItems = async(req,res) => {
     try {
+        console.log('Fetching items for user:', req.user._id);
         const {category} = req.query;
         const query = {
             status: 'Available',
@@ -66,7 +67,7 @@ const getItems = async(req,res) => {
         }
 
         const items = await Item.find(query).sort({createdAt: -1}).populate('owner');
-        // console.log(items);
+        console.log(items);
         return res.status(200).json({
             success: true,
             count: items.length,
