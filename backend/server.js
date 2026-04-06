@@ -26,10 +26,11 @@ connectDB();
 app.use(express.json());
 
 // Enables CORS for all routes
-app.use(cors({
-  origin: url,
-  credentials: true
-}));
+app.use(cors());
+// app.use(cors({
+//   origin: url,
+//   credentials: true
+// }));
 
 // Parse URL-encoded bodies (form submissions)
 app.use(express.urlencoded({extended: true}));
