@@ -20,7 +20,7 @@ const Home = () => {
 
         const BASE_URL = import.meta.env.VITE_BASE_URL;
         console.log('Fetching items with token:', token);
-        const response = await axios.get(`https://rental-app-1-zfws.onrender.com/api/item`, {
+        const response = await axios.get(`${BASE_URL}/api/item`, {
           headers: { Authorization: `Bearer ${token}` },
           category: 'All'
         });

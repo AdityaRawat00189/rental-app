@@ -23,8 +23,8 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const BASE_URL = import.meta.env.VITE_BASE_URL;
-      const response = await axios.post(`https://rental-app-1-zfws.onrender.com/api/auth/login`, formData);
+      const BASE_URL = import.meta.env.VITE_BASE_URL || "";
+      const response = await axios.post(`${BASE_URL}/api/auth/login`, formData);
 
       if (response.data.token) {
         localStorage.setItem('user', JSON.stringify(response.data));
