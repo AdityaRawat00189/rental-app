@@ -12,6 +12,7 @@ import Home2 from './pages/Home2'
 import ProductDetail from './pages/ProductDetail'
 import LendItem from './pages/LendItem'
 import Dashboard from './pages/Dashboard';
+import ChatWidget from './components/ChatWidget';
 
 function App() {
 
@@ -29,6 +30,8 @@ function App() {
           <Route path='/dashboard' element={<Dashboard></Dashboard>}></Route>
         </Routes>
       </div>
+
+      <ChatWidget></ChatWidget>
     </Router>
   )
 }

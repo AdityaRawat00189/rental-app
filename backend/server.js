@@ -7,11 +7,16 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAi = new GoogleGenerativeAI("AIzaSyDM_UwrO5pdYUlUVyfL7gmsFrcNEg5uS3A");
+
 // User Defined Routes
 const authRoutes = require('./routes/authRoutes');
 const itemRoutes = require('./routes/itemRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const chatBotRoutes = require('./routes/chatBotRoutes');
 const {protect} = require('./middleware/authMiddleware');
+// const { model } = require('mongoose');
 
 // Change before deployment to production URL
 // const url = process.env.FRONTEND_URL;
@@ -43,6 +48,7 @@ app.get('/',(req,res) => {
 app.use('/api/auth',authRoutes);
 app.use('/api/item',protect,itemRoutes);
 app.use('/api/booking',protect,bookingRoutes);
+app.use('/api/ask',chatBotRoutes)
 
 app.listen(process.env.PORT || 3000, ()=>{
     console.log('🚀 Server is running on port ' + (process.env.PORT || 3000));
