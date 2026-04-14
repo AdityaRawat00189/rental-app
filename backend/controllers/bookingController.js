@@ -5,9 +5,12 @@ const createBooking = async(req, res) => {
     // console.log("Hit the booking controller");
     try {
         // console.log("Received booking request from user");
+        const { start, end } = req.body;
+        console.log(start, end);
         const itemId = req.params.id; // From the URL /create/:id
         const borrowerId = req.user._id;
-        const startDate = new Date(); // Assuming rental starts immediately, can be modified to accept from request body
+        const startDate = new Date(start); // Assuming rental starts immediately, can be modified to accept from request body
+        const endDate = new Date(end); // Assuming rental ends immediately, can be modified to accept from request body
         // console.log("Creating booking for item:", itemId, "by user:", borrowerId)
         const item = await Item.findById(itemId);
 
@@ -23,16 +26,8 @@ const createBooking = async(req, res) => {
         if(item.owner.toString() === req.user._id.toString()) {
             return res.status(400).json({message: "You cannot rent your own listed item"})
         }
-        // 4. Price Calculation
-        // const start = new Date(startDate);
-        // const end = new Date(endDate);
-        // const diff = end - start;
-        // // 4.1 Check minimum 1 Day 
-        // const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
-        // if((end-start) < oneDay) {
-        //     return res.status(400).json({message: "Minimum Time to rent is 1 day"})
-        // }
 
+        console.log(startDate, endDate);
 
         // 3. Create a booking
         const booking = await Booking.create({
@@ -40,7 +35,7 @@ const createBooking = async(req, res) => {
             renter: req.user._id,
             owner: item.owner,
             startDate,
-            // endDate,
+            endDate,
         })
        
         // Change the item status when it gets accepted by the owner

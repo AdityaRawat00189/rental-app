@@ -61,7 +61,7 @@ const LendItem = () => {
       });
 
       if (res.status === 201) {
-        alert("Success! Your item is live at GLBITM.");
+        alert("Success! Your item is live at Marketplace.");
         Navigate('/home2');
       }
 
