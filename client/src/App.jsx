@@ -13,6 +13,7 @@ import ProductDetail from './pages/ProductDetail'
 import LendItem from './pages/LendItem'
 import Dashboard from './pages/Dashboard';
 import ChatWidget from './components/ChatWidget';
+import AssetManager from './pages/AssetManager';
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
           <Route path='/login' element={<Login></Login>}></Route>
           <Route path='/signup' element={<Signup></Signup>}></Route>
           <Route path='/dashboard' element={<Dashboard></Dashboard>}></Route>
+          <Route path='/my-listings' element={<AssetManager></AssetManager>}></Route>
         </Routes>
       </div>
 

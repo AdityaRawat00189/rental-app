@@ -231,8 +231,10 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [view, setView] = useState('renter'); // 'renter' or 'lender'
   const [searchTerm, setSearchTerm] = useState('');
@@ -312,7 +314,7 @@ const Dashboard = () => {
             <LayoutDashboard size={20} />
           </div>
           <div className="p-3 text-white/20 hover:text-white cursor-pointer transition-colors">
-            <Handshake size={20} />
+            <Handshake size={20} onClick={() => navigate('/my-listings')} />
           </div>
         </nav>
       </aside>
@@ -325,7 +327,7 @@ const Dashboard = () => {
               <h1 className="text-6xl font-black italic tracking-tighter uppercase leading-none">
                 Command <span className="text-[#F2B82E]">Center</span>
               </h1>
-              <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em]">Active Transaction Archives // GLBITM Protocol</p>
+              <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em]">Active Transaction Archives // College Protocol</p>
             </div>
             
             <div className="flex items-center gap-4">

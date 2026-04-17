@@ -165,6 +165,34 @@ const updateItem = async(req,res) => {
     }
 }
 
+const updateItemStatus = async(req,res) => {
+    try {
+        const item = await Item.findById(req.params.id);
+        const {status} = req.body;
+
+        if(!item) {
+            return res.status(404).json({
+                message: "Item not found",
+            })
+        }
+
+        item.status = status;
+        await item.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Item status updated successfully",
+            item,
+        })
+        
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error in updating status",
+            error: error.message,
+        })
+    }
+}
+
 module.exports = {
     createItem,
     getMyLendedItems,
@@ -172,4 +200,5 @@ module.exports = {
     deleteItem,
     updateItem,
     getItems,
+    updateItemStatus,
 }

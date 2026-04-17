@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router();
-const {createItem, getMyLendedItems, getItemById, deleteItem, updateItem, getItems} = require('../controllers/itemController')
+const {createItem, getMyLendedItems, getItemById, deleteItem, updateItem, getItems, updateItemStatus} = require('../controllers/itemController')
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -18,9 +18,11 @@ router.get('/my-items', protect, getMyLendedItems);
 router.get('/:id', protect, getItemById);
 
 // Delete listed item
-router.delete('/:id', protect, deleteItem);
+router.delete('/delete/:id', protect, deleteItem);
 
 // Update listed item
-router.put('/:id',protect, updateItem);
+router.put('/update/:id',protect, updateItem);
+
+router.put('/update-status/:id', protect, updateItemStatus);
 
 module.exports = router;
