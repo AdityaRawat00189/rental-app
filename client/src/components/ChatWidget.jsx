@@ -39,7 +39,8 @@ const ChatWidget = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/ask', { message: userText });
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      const response = await axios.post(`${BASE_URL}/api/ask`, { message: userText });
       const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setMessages(prev => [...prev, { sender: 'bot', text: response.data.reply, time: replyTime }]);
     } catch (error) {
