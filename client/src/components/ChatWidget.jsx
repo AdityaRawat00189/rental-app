@@ -40,7 +40,7 @@ const ChatWidget = () => {
 
     try {
       // console.log("Sending user query to backend:", userText);
-      const BASE_URL = import.meta.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
+      const BASE_URL = import.meta.env.VITE_BASE_URL ;
       const response = await axios.post(`${BASE_URL}/api/ask`, { message: userText } , { timeout: 10000 });
       // console.log("Received response from backend:", response.data);
       const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
