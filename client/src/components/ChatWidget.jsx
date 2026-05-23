@@ -39,10 +39,14 @@ const ChatWidget = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/ask', { message: userText });
+      // console.log("Sending user query to backend:", userText);
+      const BASE_URL = import.meta.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
+      const response = await axios.post(`${BASE_URL}/api/ask`, { message: userText } , { timeout: 10000 });
+      // console.log("Received response from backend:", response.data);
       const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setMessages(prev => [...prev, { sender: 'bot', text: response.data.reply, time: replyTime }]);
     } catch (error) {
+      // console.log(error.response?.data?.message || error.message);
       const errorTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setMessages(prev => [...prev, { sender: 'bot', text: 'ERR: Neural link severed. Connection timeout.', time: errorTime }]);
     } finally {

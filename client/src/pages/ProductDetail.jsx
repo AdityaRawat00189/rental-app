@@ -258,6 +258,25 @@ const ProductDetail = () => {
     }
   }
 
+  const handleContactOwner = async () => {
+    console.log("Initiating chat with owner:", item.owner._id);
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+      // This hits the route we added in Step 3
+      const res = await axios.post(`${BASE_URL}/api/chat`, 
+        { userId: item.owner._id }, // The owner's ID
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+
+      // Redirect to the dedicated messaging page with the ID
+      navigate(`/messages/${res.data._id}`);
+    } catch (error) {
+      console.error("Protocol Error: Unable to initiate chat", error);
+    }
+  }
+
   useEffect(() => {
     const fetchItemDetails = async () => {
       try {
@@ -404,7 +423,7 @@ const ProductDetail = () => {
 
               <button 
                 className="w-full py-6 border border-white/10 rounded-[2rem] text-white/40 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/5 hover:text-white transition-all flex items-center justify-center gap-4" 
-                onClick={() => setChatOpen(true)}
+                onClick={() => handleContactOwner()}
               >
                 Secure Channel Chat
                 <MessageSquare size={16} />

@@ -381,7 +381,7 @@ const Dashboard = () => {
                 {/* Item Info */}
                 <div className="flex items-center gap-6 w-full lg:w-1/3">
                   <div className="w-16 h-16 rounded-2xl bg-black border border-white/10 flex-shrink-0 overflow-hidden">
-                    {/* <img src={booking.item?.images[0]} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" alt="" /> */}
+                    <img src={booking.item?.images[0]} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" alt="" />
                   </div>
                   <div>
                     <h3 className="text-lg font-black uppercase italic tracking-tight">{booking.item?.title}</h3>

@@ -61,7 +61,7 @@ const dashboard = async(req, res) => {
                 {renter: user},
                 {owner: user}
             ]
-        }).populate('item', 'title description price').populate('owner','name email').populate('renter', 'name email');
+        }).populate('item', 'title description price images').populate('owner','name email').populate('renter', 'name email');
         res.status(200).json(requests);
     } catch (error) {
         res.status(500).json({message: "Request Failed", error: error.message});

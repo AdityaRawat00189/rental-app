@@ -2,8 +2,10 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from 'lucide-react';
 import image from "../images/image.png";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-[#050505] overflow-hidden">
       
@@ -65,7 +67,7 @@ const Hero = () => {
         <motion.button 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="mt-12 px-12 py-5 bg-[#F2B82E] text-black font-black rounded-full flex items-center gap-3 shadow-[0_20px_40px_rgba(242,184,46,0.2)]"
+          className="mt-12 px-12 py-5 bg-[#F2B82E] text-black font-black rounded-full flex items-center gap-3 shadow-[0_20px_40px_rgba(242,184,46,0.2)]" onClick = {() => navigate('/home2')}
         >
           Explore Assets <ArrowRight size={20} />
         </motion.button>

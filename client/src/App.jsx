@@ -14,6 +14,7 @@ import LendItem from './pages/LendItem'
 import Dashboard from './pages/Dashboard';
 import ChatWidget from './components/ChatWidget';
 import AssetManager from './pages/AssetManager';
+import Messages from './pages/Messages';
 
 function App() {
 
@@ -30,6 +31,8 @@ function App() {
           <Route path='/signup' element={<Signup></Signup>}></Route>
           <Route path='/dashboard' element={<Dashboard></Dashboard>}></Route>
           <Route path='/my-listings' element={<AssetManager></AssetManager>}></Route>
+          <Route path='/messages' element={<Messages></Messages>}></Route>
+          <Route path='/messages/:conversationId' element={<Messages></Messages>}></Route>
         </Routes>
       </div>
 
