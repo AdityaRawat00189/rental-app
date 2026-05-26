@@ -113,7 +113,11 @@ const registerUser = async (req,res) => {
 
 const sendOTP = async (req,res) => {
     try {
+
+        console.log("Send OTP Called");
         const {email} = req.body;
+        console.log(`Target Email: ${email}`);
+
         const user = await User.findOne({email});
 
         if(user) {
@@ -123,11 +127,22 @@ const sendOTP = async (req,res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         const redisKey = `otp:${email}`;
+
+        console.log(`Attempting to write to Redis Key: ${redisKey}`);
+
         await redisClient.set(redisKey, otp, {
             EX: 300
         }); // Store OTP in Redis with 5 minutes expiration
 
         console.log(`[DOCKER REDIS] Saved OTP ${otp} for ${email}. Self-destructing in 5m.`);
+
+        console.log("=== REDIS WRITE SUCCESS ===");
+
+        // Let's read it back right away to prove it's in the cloud instance!
+        const verifyOtp = await redisClient.get(redisKey);
+        console.log(`Render Verification Read: ${verifyOtp ? 'FOUND OTP' : 'NOT FOUND IN REDIS'}`);
+
+        console.log(`[RENDER REDIS] Saved OTP ${otp} for ${email}. Self-destructing in 5m.`);
 
         await handleSendEmail(email, otp);
 
