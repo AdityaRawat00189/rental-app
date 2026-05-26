@@ -4,13 +4,13 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-const {registerUser, verifyOTP, resendOTP, loginUser} = require('../controllers/authController');
+const {registerUser, verifyOTP, sendOTP, resendOTP, loginUser} = require('../controllers/authController');
 
 // Authentication Routes
 
 router.post('/signup', registerUser);
-router.post('/generate-otp',resendOTP);
-router.post('/resend-otp', resendOTP)
+router.post('/generate-otp',sendOTP);
+router.post('/resend-otp', resendOTP);
 router.post('/verify-otp',verifyOTP);
 
 router.post('/login',loginUser)

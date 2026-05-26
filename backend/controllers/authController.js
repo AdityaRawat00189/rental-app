@@ -4,11 +4,48 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/sendEmail');
 
+const redisClient = require('../config/redis');
+
 
 function generateToken(id){
     const my_secret_key = process.env.MY_SECRET_KEY;
     
     return jwt.sign({id},my_secret_key,{expiresIn: '30d'})
+}
+
+async function handleSendEmail(email, newOTP) {
+    // 🎨 THE PROFESSIONAL HTML TEMPLATE
+    const htmlTemplate = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eeeeee;">
+            <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #F2B82E;">
+                <h2 style="color: #333333; margin: 0;">CampusLink</h2>
+            </div>
+            
+            <div style="padding: 30px 20px; text-align: center; background-color: #ffffff; border-radius: 8px; margin-top: 20px;">
+                <p style="color: #666666; font-size: 16px; margin-bottom: 10px;">Hello,</p>
+                <p style="color: #333333; font-size: 18px; font-weight: bold; margin-bottom: 20px;">Your verification code is:</p>
+                
+                <div style="background-color: #F8F9FA; border: 2px dashed #F2B82E; padding: 15px 30px; display: inline-block; border-radius: 6px; letter-spacing: 5px;">
+                    <h1 style="color: #050505; font-size: 36px; margin: 0;">${newOTP}</h1>
+                </div>
+                
+                <p style="color: #999999; font-size: 14px; margin-top: 30px;">This code will expire in <strong>15 minutes</strong>.</p>
+                <p style="color: #999999; font-size: 14px;">If you did not request this code, please ignore this email.</p>
+            </div>
+            
+            <div style="text-align: center; padding-top: 20px; color: #aaaaaa; font-size: 12px;">
+                <p>&copy; ${new Date().getFullYear()} CampusLink Team. All rights reserved.</p>
+            </div>
+        </div>
+    `;
+
+    // OTP SEND TO EMAIL
+    await sendEmail({
+        email: email,
+        subject: 'Your College Rental Verification Code',
+        message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
+        html: htmlTemplate
+    });
 }
 
 const registerUser = async (req,res) => {
@@ -24,16 +61,15 @@ const registerUser = async (req,res) => {
         //1.1 Check email ends with .ac.in or .edu
 
         // 1.2 Check email otp is correct or not;
-        const emailRecord = await Email.findOne({email});
-        // console.log(emailRecord);
-        if(!emailRecord || emailRecord.otp !== otp || emailRecord.otpExpires < Date.now()) {
+        const redisKey = `otp:${email}`;
+        const storedOTP = await redisClient.get(redisKey);
+
+        if(!storedOTP || storedOTP !== otp) {
             return res.status(400).json({message: "Invalid or expired OTP"});
         }
-        await Email.findOneAndDelete({email});
 
-        // console.log("Successfully OTP Verified");
-        // 2. Check user is already exists or not  
-        // ( 409 : Conflict with the current state of the resource )
+        await redisClient.del(redisKey); // OTP is single-use, so delete it after verification
+
         const userExists = await User.findOne({ email });
         if(userExists) {
             return res.status(409).json({message : "User already exists"})
@@ -75,6 +111,33 @@ const registerUser = async (req,res) => {
     }
 };
 
+const sendOTP = async (req,res) => {
+    try {
+        const {email} = req.body;
+        const user = await User.findOne({email});
+
+        if(user) {
+            return res.status(400).json({message: "User already exists with this email. Please login."});
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const redisKey = `otp:${email}`;
+        await redisClient.set(redisKey, otp, {
+            EX: 300
+        }); // Store OTP in Redis with 5 minutes expiration
+
+        console.log(`[DOCKER REDIS] Saved OTP ${otp} for ${email}. Self-destructing in 5m.`);
+
+        await handleSendEmail(email, otp);
+
+
+        return res.status(200).json({message: "OTP  sent successfully!"});
+    }catch (error) {
+        res.status(500).json({message: "Failed to  send OTP",error: error.message});
+    }
+}
+
 const resendOTP = async (req,res) => {
     try {
         // console.log("Resend OTP Called");
@@ -88,47 +151,14 @@ const resendOTP = async (req,res) => {
 
         const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // 🎨 THE PROFESSIONAL HTML TEMPLATE
-        const htmlTemplate = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eeeeee;">
-                <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #F2B82E;">
-                    <h2 style="color: #333333; margin: 0;">CampusLink</h2>
-                </div>
-                
-                <div style="padding: 30px 20px; text-align: center; background-color: #ffffff; border-radius: 8px; margin-top: 20px;">
-                    <p style="color: #666666; font-size: 16px; margin-bottom: 10px;">Hello,</p>
-                    <p style="color: #333333; font-size: 18px; font-weight: bold; margin-bottom: 20px;">Your verification code is:</p>
-                    
-                    <div style="background-color: #F8F9FA; border: 2px dashed #F2B82E; padding: 15px 30px; display: inline-block; border-radius: 6px; letter-spacing: 5px;">
-                        <h1 style="color: #050505; font-size: 36px; margin: 0;">${newOTP}</h1>
-                    </div>
-                    
-                    <p style="color: #999999; font-size: 14px; margin-top: 30px;">This code will expire in <strong>15 minutes</strong>.</p>
-                    <p style="color: #999999; font-size: 14px;">If you did not request this code, please ignore this email.</p>
-                </div>
-                
-                <div style="text-align: center; padding-top: 20px; color: #aaaaaa; font-size: 12px;">
-                    <p>&copy; ${new Date().getFullYear()} CampusLink Team. All rights reserved.</p>
-                </div>
-            </div>
-        `;
+        const redisKey = `otp:${email}`;
+        await redisClient.set(redisKey, newOTP, {
+            EX: 300
+        }); // Store OTP in Redis with 5 minutes expiration
 
-        // OTP SEND TO EMAIL
-        await sendEmail({
-            email: email,
-            subject: 'Your College Rental Verification Code',
-            message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
-            html: htmlTemplate
-        });
+        console.log(`[DOCKER REDIS] Saved OTP ${newOTP} for ${email}. Self-destructing in 5m.`);
 
-        const updatedUser = await Email.findOneAndUpdate({email},{
-            otp: newOTP,
-            otpExpires: Date.now() + 15*60*1000
-        },{new: true, upsert: true});
-        // user.otp = newOTP;
-        // user.otpExpires = Date.now() + 15*60*1000;
-        // console.log("1")
-        // await user.save();
+        await handleSendEmail(email, newOTP);
         
         return res.status(200).json({message: "OTP  sent successfully!"});
 
@@ -213,6 +243,7 @@ const loginUser = async (req,res) => {
 module.exports = {
     registerUser,
     verifyOTP,
+    sendOTP,
     resendOTP,
     loginUser,
 }
