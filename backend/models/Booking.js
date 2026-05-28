@@ -17,20 +17,40 @@ const bookingSchema = new mongoose.Schema({
         required : true,
     },
 
-    startDate : {
+    startDate : { // Pickup date
         type : Date,
         required : true,
     },
-    endDate : {
+    endDate : {  // Return date
         type : Date,
-        // required : true,
+        required : true,
     },
-
+    pickupLocation : {
+        type : String,
+        required : true,
+    },
+    returnLocation : {
+        type : String,
+        required : true,
+    },
+    pickupTime : {
+        type : String,
+        required : true,
+    },
+    returnTime : {
+        type : String,
+        required : true,
+    },
     status : {
         type : String,
         enum : ['Pending','Approved','PickedUp','Returned','Cancelled'],
         default : 'Pending',
     },
+    paymentStatus : {
+        type : String,
+        enum : ['Pending','Paid','Failed'],
+        default : 'Pending',
+    }
 
 },{timestamps: true})
 

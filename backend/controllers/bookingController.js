@@ -1,16 +1,23 @@
 const Item = require('../models/Item');
 const Booking = require('../models/Booking');
 
+// start: startDate,
+// end: endDate,
+// pickupTime: pickupTime,
+// returnTime: returnTime,
+// pickupLocation: pickupLocation,
+// returnLocation: returnLocation
+
 const createBooking = async(req, res) => {
     // console.log("Hit the booking controller");
     try {
         // console.log("Received booking request from user");
-        const { start, end } = req.body;
-        console.log(start, end);
+        const { start, end , pickupLocation, returnLocation, pickupTime, returnTime } = req.body;
+        // console.log(start, end);
         const itemId = req.params.id; // From the URL /create/:id
         const borrowerId = req.user._id;
-        const startDate = new Date(start); // Assuming rental starts immediately, can be modified to accept from request body
-        const endDate = new Date(end); // Assuming rental ends immediately, can be modified to accept from request body
+        const startDate = new Date(start); 
+        const endDate = new Date(end); 
         // console.log("Creating booking for item:", itemId, "by user:", borrowerId)
         const item = await Item.findById(itemId);
 
@@ -27,7 +34,7 @@ const createBooking = async(req, res) => {
             return res.status(400).json({message: "You cannot rent your own listed item"})
         }
 
-        console.log(startDate, endDate);
+        // console.log(startDate, endDate);
 
         // 3. Create a booking
         const booking = await Booking.create({
@@ -36,6 +43,10 @@ const createBooking = async(req, res) => {
             owner: item.owner,
             startDate,
             endDate,
+            pickupLocation,
+            returnLocation,
+            pickupTime,
+            returnTime,
         })
        
         // Change the item status when it gets accepted by the owner
@@ -134,8 +145,31 @@ const updateBookingStatus = async (req, res) => {
     }
 }
 
+const updatePaymentStatus = async(req, res) => {
+    // This function will be responsible for updating the payment status of a booking, likely to "Paid" once the payment is successful. 
+
+    const bookingId = req.params.id;
+    try {
+        const booking = await Booking.findById(bookingId);
+        
+        if (!booking) {
+            return res.status(404).json({ message: "Booking record not found" });
+        }
+        // Update the payment status (example: set to "Paid")
+        booking.paymentStatus = "Paid";
+        booking.status = "PickedUp";
+        await booking.save();
+
+        res.status(200).json({ message: "Payment status updated successfully", booking });
+    } catch (error) {
+        console.error("Error updating payment status:", error);
+        res.status(500).json({ message: "Request Failed", error: error.message });
+    }
+}
+
 module.exports  = {
     updateBookingStatus,
+    updatePaymentStatus,
     dashboard,
     createBooking,
 }

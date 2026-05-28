@@ -15,6 +15,8 @@ import Dashboard from './pages/Dashboard';
 import ChatWidget from './components/ChatWidget';
 import AssetManager from './pages/AssetManager';
 import Messages from './pages/Messages';
+import ActiveExchange from './pages/ActiveExchange';
+import LifeCycleLogs from './pages/LifeCycleLogs';
 
 function App() {
 
@@ -33,6 +35,8 @@ function App() {
           <Route path='/my-listings' element={<AssetManager></AssetManager>}></Route>
           <Route path='/messages' element={<Messages></Messages>}></Route>
           <Route path='/messages/:conversationId' element={<Messages></Messages>}></Route>
+          <Route path='/active-exchange' element={<ActiveExchange></ActiveExchange>}></Route>
+          <Route path='/product-lifecycle' element={<LifeCycleLogs></LifeCycleLogs>}></Route>
         </Routes>
       </div>
 

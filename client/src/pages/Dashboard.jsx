@@ -1,233 +1,7 @@
-// import React, { useState, useEffect, useMemo } from 'react';
-// import { LayoutDashboard, ShoppingCart, Handshake, Wallet, Star, Plus, Search, Bell } from 'lucide-react';
-// import axios from 'axios';
-
-// const Dashboard = () => {
-//   const [bookings, setBookings] = useState([]);
-//   const [view, setView] = useState('renter'); // 'renter' or 'lender'
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [loading, setLoading] = useState(true);
-//   const [refreshTrigger, setRefreshTrigger] = useState(0); 
-
-//   // Get current User ID from localStorage
-//   const userStr = localStorage.getItem('user');
-//   const currentUser = userStr ? JSON.parse(userStr) : null;
-//   const currentUserId = currentUser?.id || currentUser?._id;
-
-
-//   const handleStatusUpdate = async (bookingId, newStatus) => {
-//     try {
-//       const token = currentUser?.token;
-//       // Backend route update: /api/booking/status/:id
-
-//       const BASE_URL = import.meta.env.VITE_BASE_URL;
-//       const res = await axios.patch(`${BASE_URL}/api/booking/status/${bookingId}`, 
-//         { status: newStatus },
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-
-//       if (res.status === 200) {
-//         // Update state locally so UI changes immediately
-//         setBookings(prev => prev.map(b => 
-//           b._id === bookingId ? { ...b, status: newStatus } : b
-//         )); 
-//       }
-//       setRefreshTrigger(prev => prev + 1);
-//     } catch (error) {
-//       console.error("Status update failed:", error);
-//       alert("Failed to update status. Please try again.");
-//     }
-//   };
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         const token = currentUser?.token;
-//         if (!token) return;
-
-//         const BASE_URL = import.meta.env.VITE_BASE_URL;
-//         const res = await axios.get(`${BASE_URL}/api/booking/dashboard`, {
-//           headers: { Authorization: `Bearer ${token}` }
-//         });
-
-//         // The data from your MongoDB response is an array of bookings
-//         setBookings(res.data);
-//         setLoading(false);
-//       } catch (error) {
-//         console.error("Fetch error:", error);
-//         alert("Protocol Error: Data Retrieval Failed");
-//         setLoading(false);
-//       }
-//     };
-//     fetchData();
-//   }, [currentUserId, refreshTrigger]);
-
-//   // 1. DYNAMIC FILTERING based on Role and Search
-//   const filteredData = useMemo(() => {
-//     return bookings.filter(b => {
-//       // Determine if the user is the renter or the owner in this booking
-//       const isRenterView = view === 'renter' && b.renter?._id === currentUserId;
-//       const isLenderView = view === 'lender' && b.owner?._id === currentUserId;
-      
-//       const matchesSearch = b.item?.title?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-//       return (isRenterView || isLenderView) && matchesSearch;
-//     });
-//   }, [bookings, view, searchTerm, currentUserId]);
-
-//   // 2. DYNAMIC METRICS
-//   const stats = useMemo(() => {
-//     const asRenter = bookings.filter(b => b.renter?._id === currentUserId);
-//     const asLender = bookings.filter(b => b.owner?._id === currentUserId);
-    
-//     return {
-//       activeRentals: asRenter.filter(b => b.status === 'Approved').length,
-//       itemsLent: asLender.length,
-//       // Total earnings would require a price field in your Item or Booking schema
-//       totalEarnings: asLender.filter(b => b.status === 'Approved').length * 500, // Placeholder calculation
-//       trustScore: 4.9
-//     };
-//   }, [bookings, currentUserId]);
-
-//   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-yellow-400">Loading Dashboard...</div>;
-  
-
-//   return (
-//     <div className="flex min-h-screen bg-black text-gray-100 font-sans">
-//       {/* Sidebar */}
-//       <aside className="w-64 border-r border-gray-800 hidden md:flex flex-col">
-//         <div className="p-6 text-2xl font-bold text-yellow-400 tracking-tighter">CAMPUS<span className="text-white">LINK</span></div>
-//         <nav className="flex-1 px-4 space-y-2 mt-4">
-//           <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-yellow-400 text-black font-bold cursor-pointer shadow-[0_0_15px_rgba(250,204,21,0.3)]">
-//             <LayoutDashboard size={20}/><span className="text-sm">Dashboard</span>
-//           </div>
-//         </nav>
-//       </aside>
-
-//       <main className="flex-1 flex flex-col">
-//         {/* Header */}
-//         <header className="h-16 border-b border-gray-800 flex items-center justify-between px-8 bg-black/50 backdrop-blur-md sticky top-0 z-10">
-//           <div className="relative w-96">
-//             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-//             <input 
-//               type="text" 
-//               placeholder={`Search your ${view} listings...`} 
-//               value={searchTerm}
-//               onChange={(e) => setSearchTerm(e.target.value)}
-//               className="w-full bg-gray-900 border border-gray-800 rounded-md py-1.5 pl-10 pr-4 focus:outline-none focus:border-yellow-400 transition-colors"
-//             />
-//           </div>
-//           <button className="bg-yellow-400 text-black px-4 py-1.5 rounded-md font-bold text-sm hover:shadow-[0_0_10px_rgba(250,204,21,0.5)] transition-all">
-//             <Plus size={16} className="inline mr-1" /> List New Item
-//           </button>
-//         </header>
-
-//         <div className="p-8 max-w-7xl mx-auto w-full">
-//           {/* STATS */}
-//           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-//             <StatCard label="Active Rentals" value={stats.activeRentals} icon={<ShoppingCart className="text-yellow-400" />} />
-//             <StatCard label="Your Items Lent" value={stats.itemsLent} icon={<Handshake className="text-yellow-400" />} />
-//             <StatCard label="Est. Earnings" value={`₹${stats.totalEarnings}`} icon={<Wallet className="text-yellow-400" />} />
-//             <StatCard label="Trust Score" value={stats.trustScore} icon={<Star className="text-yellow-400" />} />
-//           </div>
-
-//           {/* VIEW TOGGLE */}
-//           <div className="flex items-center justify-between mb-6">
-//             <div className="inline-flex p-1 bg-gray-900 border border-gray-800 rounded-lg">
-//               {['renter', 'lender'].map((role) => (
-//                 <button 
-//                   key={role}
-//                   onClick={() => { setView(role); setSearchTerm(''); }}
-//                   className={`px-8 py-2 rounded-md text-sm font-bold capitalize transition-all ${view === role ? 'bg-yellow-400 text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
-//                 >
-//                   As {role}
-//                 </button>
-//               ))}
-//             </div>
-//           </div>
-
-//           {/* TABLE */}
-//           <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden border-t-4 border-t-yellow-400">
-//             <table className="w-full text-left">
-//               <thead className="bg-black/50 text-gray-400 text-xs uppercase tracking-widest">
-//                 <tr>
-//                   <th className="px-6 py-4">Item Details</th>
-//                   <th className="px-6 py-4">{view === 'renter' ? 'Lending Owner' : 'Customer Renter'}</th>
-//                   <th className="px-6 py-4">Status</th>
-//                   <th className="px-6 py-4">Action</th>
-//                 </tr>
-//               </thead>
-//               <tbody className="divide-y divide-gray-800">
-//                 {filteredData.map(booking => (
-//                   <tr key={booking._id} className="hover:bg-yellow-400/5 transition-colors group">
-//                     <td className="px-6 py-4">
-//                       <p className="font-bold text-white">{booking.item?.title}</p>
-//                       <p className="text-xs text-gray-500">ID: {booking._id.slice(-6)}</p>
-//                     </td>
-//                     <td className="px-6 py-4">
-//                       <p className="text-sm font-medium text-gray-200">
-//                         {view === 'renter' ? booking.owner?.name : booking.renter?.name}
-//                       </p>
-//                     </td>
-//                     <td className="px-6 py-4">
-//                       <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter border ${
-//                         booking.status === 'Approved' ? 'border-green-500 text-green-500' : 
-//                         booking.status === 'Pending' ? 'border-yellow-500 text-yellow-500' : 
-//                         booking.status === 'Cancelled' ? 'border-red-500 text-red-500' : 'border-gray-500 text-gray-500'
-//                       }`}>
-//                         {booking.status}
-//                       </span>
-//                     </td>
-//                     <td className="px-6 py-4 text-right">
-//                       {/* --- ACTION LOGIC --- */}
-//                       {view === 'lender' && booking.status === 'Pending' ? (
-//                         <div className="flex gap-2 justify-end">
-//                           <button 
-//                             onClick={() => handleStatusUpdate(booking._id, 'Approved')}
-//                             className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
-//                           >
-//                             Accept
-//                           </button>
-//                           <button 
-//                             onClick={() => handleStatusUpdate(booking._id, 'Cancelled')}
-//                             className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-600 px-3 py-1 rounded text-[10px] font-bold uppercase transition-all"
-//                           >
-//                             Reject
-//                           </button>
-//                         </div>
-//                       ) : (
-//                         <button className="bg-gray-800 hover:bg-yellow-400 hover:text-black px-3 py-1 rounded text-[10px] font-bold uppercase transition-all">
-//                           Details
-//                         </button>
-//                       )}
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// };
-
-// const StatCard = ({ label, value, icon }) => (
-//   <div className="bg-gray-900 border border-gray-800 p-6 rounded-xl hover:border-yellow-400/50 transition-all">
-//     <div className="flex justify-between items-start mb-4">
-//       <div className="p-2 bg-black rounded-lg border border-gray-800">{icon}</div>
-//     </div>
-//     <h3 className="text-3xl font-black text-white mb-1 tracking-tight">{value}</h3>
-//     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{label}</p>
-//   </div>
-// );
-
-// export default Dashboard;
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   LayoutDashboard, ShoppingCart, Handshake, Wallet, Star, 
-  Plus, Search, ArrowRight, Shield, Zap, Clock, Info, X, Check
+  Plus, Search, ArrowRight, Shield, Zap, Clock, Info, X, Check, MapPin, MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -271,11 +45,35 @@ const Dashboard = () => {
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Immediate local update
       setRefreshTrigger(prev => prev + 1);
       setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: newStatus } : b));
     } catch (error) {
       alert("Protocol Error: Status update failed.");
+    }
+  };
+
+  // --- NEW: Handle opening chat with the counterparty ---
+  const handleChat = async (booking) => {
+    try {
+      // Determine who you should chat with based on your current view
+      const counterpartyId = view === 'lender' 
+        ? (booking.renter?._id || booking.renter) 
+        : (booking.owner?._id || booking.owner);
+
+      if (!counterpartyId) return;
+
+      const token = currentUser?.token;
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+      const res = await axios.post(`${BASE_URL}/api/chat`, 
+        { userId: counterpartyId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      navigate(`/messages/${res.data._id}`);
+    } catch (error) {
+      console.error("Protocol Error: Unable to initiate chat", error);
+      alert("Protocol Error: Unable to connect secure channel.");
     }
   };
 
@@ -300,139 +98,218 @@ const Dashboard = () => {
   if (loading) return (
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center">
       <Zap className="animate-pulse text-[#F2B82E] mb-4" size={40} />
-      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Syncing Protocol Data...</span>
+      <span className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Syncing Protocol Data...</span>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#F2B82E] selection:text-black">
-      {/* Sidebar - Lean & Tech Focused */}
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#F2B82E] selection:text-black font-sans">
+      
+      {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-20 border-r border-white/5 bg-black hidden lg:flex flex-col items-center py-10 gap-10 z-50">
-        <div className="text-[#F2B82E] font-black text-xl italic tracking-tighter">CL</div>
-        <nav className="flex flex-col gap-8">
-          <div className="p-3 bg-[#F2B82E] text-black rounded-2xl shadow-[0_0_20px_rgba(242,184,46,0.2)] cursor-pointer">
-            <LayoutDashboard size={20} />
+        <div className="text-[#F2B82E] font-black text-2xl italic tracking-tighter">CL</div>
+        <nav className="flex flex-col gap-6 w-full px-4">
+          <div className="p-4 bg-[#F2B82E] text-black rounded-2xl shadow-[0_0_20px_rgba(242,184,46,0.2)] cursor-pointer flex justify-center">
+            <LayoutDashboard size={22} />
           </div>
-          <div className="p-3 text-white/20 hover:text-white cursor-pointer transition-colors">
-            <Handshake size={20} onClick={() => navigate('/my-listings')} />
+          <div 
+            className="p-4 text-white/30 hover:text-white hover:bg-white/5 rounded-2xl cursor-pointer transition-all flex justify-center"
+            onClick={() => navigate('/my-listings')}
+          >
+            <Handshake size={22} />
           </div>
         </nav>
       </aside>
 
-      <main className="lg:pl-20">
+      <main className="lg:pl-20 pb-20">
+        
         {/* Header Module */}
-        <header className="pt-24 pb-12 px-8 max-w-7xl mx-auto">
+        <header className="pt-20 lg:pt-24 pb-12 px-6 md:px-8 max-w-7xl mx-auto border-b border-white/5">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="space-y-2">
-              <h1 className="text-6xl font-black italic tracking-tighter uppercase leading-none">
+            <div className="space-y-3">
+              <h1 className="text-5xl md:text-6xl font-black italic tracking-tighter uppercase leading-none">
                 Command <span className="text-[#F2B82E]">Center</span>
               </h1>
-              <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em]">Active Transaction Archives // College Protocol</p>
+              <p className="text-white/40 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] flex items-center gap-2">
+                <Shield size={14} className="text-[#F2B82E]" /> Active Transaction Archives
+              </p>
             </div>
             
-            <div className="flex items-center gap-4">
-               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+               <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} />
                 <input 
                   type="text" 
                   placeholder="Filter Archives..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-6 text-xs font-bold focus:border-[#F2B82E] outline-none transition-all w-64"
+                  className="w-full bg-black/50 border border-white/10 rounded-2xl py-3.5 pl-12 pr-6 text-sm font-medium focus:border-[#F2B82E] focus:ring-1 focus:ring-[#F2B82E] outline-none transition-all"
                 />
                </div>
-               <button onClick={() => navigate('/list-item')} className="bg-[#F2B82E] text-black px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-[#F2B82E]/10 flex items-center gap-2">
-                 <Plus size={14} /> New Asset
+               <button 
+                 onClick={() => navigate('/list-item')} 
+                 className="bg-[#F2B82E] text-black px-6 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(242,184,46,0.15)] flex items-center justify-center gap-2 flex-shrink-0"
+               >
+                 <Plus size={16} /> New Asset
                </button>
             </div>
           </div>
         </header>
 
-        <div className="px-8 max-w-7xl mx-auto space-y-12">
+        <div className="px-6 md:px-8 max-w-7xl mx-auto space-y-10 pt-10">
+          
           {/* METRIC GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard label="Active Deployments" value={stats.activeRentals} icon={<ShoppingCart size={18}/>} />
-            <StatCard label="Protocol Earnings" value={`₹${stats.earnings}`} icon={<Wallet size={18}/>} />
-            <StatCard label="Trust Index" value={stats.trustScore} icon={<Star size={18}/>} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+            <StatCard label="Active Deployments" value={stats.activeRentals} icon={<ShoppingCart size={24}/>} />
+            <StatCard label="Protocol Earnings" value={`₹${stats.earnings}`} icon={<Wallet size={24}/>} />
+            <StatCard label="Trust Index" value={stats.trustScore} icon={<Star size={24}/>} />
           </div>
 
           {/* VIEW TOGGLE */}
-          <div className="flex gap-4 border-b border-white/5 pb-6">
+          <div className="flex items-center gap-2 bg-white/[0.02] p-1.5 rounded-2xl border border-white/5 w-fit">
             {['renter', 'lender'].map((role) => (
               <button 
                 key={role}
                 onClick={() => setView(role)}
-                className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all pb-2 border-b-2 ${view === role ? 'text-[#F2B82E] border-[#F2B82E]' : 'text-white/20 border-transparent hover:text-white'}`}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 ${
+                  view === role 
+                    ? 'bg-[#F2B82E] text-black shadow-[0_0_15px_rgba(242,184,46,0.2)]' 
+                    : 'text-white/40 hover:text-white hover:bg-white/5'
+                }`}
               >
-                Archive: As {role}
+                As {role}
               </button>
             ))}
           </div>
 
           {/* TRANSACTION LOGS */}
-          <div className="space-y-4 pb-20">
-            {filteredData.length > 0 ? filteredData.map(booking => (
-              <motion.div 
-                key={booking._id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="group bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] flex flex-col lg:flex-row items-center justify-between gap-8 hover:bg-white/[0.04] transition-all"
-              >
-                {/* Item Info */}
-                <div className="flex items-center gap-6 w-full lg:w-1/3">
-                  <div className="w-16 h-16 rounded-2xl bg-black border border-white/10 flex-shrink-0 overflow-hidden">
-                    <img src={booking.item?.images[0]} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" alt="" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black uppercase italic tracking-tight">{booking.item?.title}</h3>
-                    <p className="text-[9px] font-bold text-white/20 tracking-[0.2em] uppercase">Ref ID: {booking._id.slice(-8).toUpperCase()}</p>
-                  </div>
-                </div>
-
-                {/* Date Logic */}
-                <div className="flex items-center gap-6 px-8 border-x border-white/5 w-full lg:w-1/3 justify-center text-center">
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Start</p>
-                    <p className="text-xs font-bold">{new Date(booking.startDate).toLocaleDateString()}</p>
-                  </div>
-                  <ArrowRight size={14} className="text-[#F2B82E]" />
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">End</p>
-                    <p className="text-xs font-bold">{new Date(booking.endDate).toLocaleDateString()}</p>
-                  </div>
-                </div>
-
-                {/* Status & Actions */}
-                <div className="flex items-center justify-between w-full lg:w-1/3">
-                  <div className="text-left">
-                    <p className="text-[8px] font-black text-[#F2B82E] uppercase tracking-widest mb-1">Value</p>
-                    <p className="text-2xl font-black italic">₹{booking.totalPrice || 0}</p>
+          <div className="space-y-4">
+            <AnimatePresence mode="popLayout">
+              {filteredData.length > 0 ? filteredData.map(booking => (
+                <motion.div 
+                  layout
+                  key={booking._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="group bg-[#0a0a0a] border border-white/5 p-5 md:p-6 rounded-[2rem] flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 hover:border-white/10 transition-all"
+                >
+                  {/* Asset Info */}
+                  <div className="flex items-center gap-5 w-full xl:w-1/4">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-black border border-white/10 flex-shrink-0 overflow-hidden relative">
+                      <img src={booking.item?.images[0]} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" alt="" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tight truncate">{booking.item?.title}</h3>
+                      <p className="text-[10px] font-bold text-white/40 tracking-[0.2em] uppercase mt-1">ID: {booking._id.slice(-6).toUpperCase()}</p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    {view === 'lender' && booking.status === 'Pending' ? (
-                      <div className="flex gap-2">
-                        <button onClick={() => handleStatusUpdate(booking._id, 'Approved')} className="bg-[#F2B82E] text-black p-2 rounded-xl hover:scale-110 transition-transform"><Check size={16}/></button>
-                        <button onClick={() => handleStatusUpdate(booking._id, 'Cancelled')} className="bg-white/5 text-red-500 p-2 rounded-xl hover:bg-red-500 hover:text-white transition-all"><X size={16}/></button>
+                  {/* Logistics Timeline */}
+                  <div className="w-full xl:flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 xl:gap-8 border-y xl:border-y-0 xl:border-x border-white/5 py-5 xl:py-0 xl:px-8">
+                    
+                    {/* Deployment */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[#F2B82E]">
+                        <Clock size={14} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Deployment</span>
                       </div>
-                    ) : (
-                      <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border ${
-                        booking.status === 'Approved' ? 'border-green-500/50 text-green-500 bg-green-500/5' : 
-                        booking.status === 'Pending' ? 'border-[#F2B82E]/50 text-[#F2B82E] bg-[#F2B82E]/5' : 
-                        'border-white/10 text-white/20'
-                      }`}>
-                        {booking.status}
-                      </span>
-                    )}
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-white/90">
+                          {new Date(booking.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} 
+                          {booking.pickupTime && <span className="text-white/40 ml-2">• {booking.pickupTime}</span>}
+                        </p>
+                        {booking.pickupLocation && (
+                          <p className="text-xs text-white/50 flex items-center gap-1.5">
+                            <MapPin size={12} /> <span className="truncate">{booking.pickupLocation}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Return */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-white/40">
+                        <Clock size={14} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Return</span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-white/90">
+                          {new Date(booking.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} 
+                          {booking.returnTime && <span className="text-white/40 ml-2">• {booking.returnTime}</span>}
+                        </p>
+                        {booking.returnLocation && (
+                          <p className="text-xs text-white/50 flex items-center gap-1.5">
+                            <MapPin size={12} /> <span className="truncate">{booking.returnLocation}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
                   </div>
-                </div>
-              </motion.div>
-            )) : (
-              <div className="py-20 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
-                <Info className="mx-auto text-white/10 mb-4" size={32} />
-                <p className="text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">No Archived Logs Found</p>
-              </div>
-            )}
+
+                  {/* Pricing & Status Actions */}
+                  <div className="flex xl:flex-col items-center xl:items-end justify-between w-full xl:w-[220px] gap-4">
+                    <div className="text-left xl:text-right">
+                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Total Value</p>
+                      <p className="text-2xl md:text-3xl font-black italic text-[#F2B82E]">₹{booking.totalPrice || 0}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      
+                      {/* --- NEW: Secure Channel Chat Button --- */}
+                      <button 
+                        onClick={() => handleChat(booking)}
+                        className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/60 hover:bg-[#F2B82E]/10 hover:text-[#F2B82E] hover:border-[#F2B82E]/30 transition-all shadow-sm"
+                        title={view === 'lender' ? "Message Requester" : "Message Owner"}
+                      >
+                        <MessageSquare size={16} />
+                      </button>
+
+                      {/* Accept/Reject or Status Badge */}
+                      {view === 'lender' && booking.status === 'Pending' ? (
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleStatusUpdate(booking._id, 'Cancelled')} 
+                            className="bg-white/5 text-white/60 p-2.5 rounded-xl hover:bg-red-500/10 hover:text-red-500 transition-all"
+                            title="Reject"
+                          >
+                            <X size={16}/>
+                          </button>
+                          <button 
+                            onClick={() => handleStatusUpdate(booking._id, 'Approved')} 
+                            className="bg-[#F2B82E] text-black px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(242,184,46,0.2)]"
+                          >
+                            <Check size={16}/> Accept
+                          </button>
+                        </div>
+                      ) : (
+                        <span className={`inline-flex items-center justify-center text-[10px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl border ${
+                          booking.status === 'Approved' ? 'border-green-500/30 text-green-400 bg-green-500/10' : 
+                          booking.status === 'Pending' ? 'border-[#F2B82E]/30 text-[#F2B82E] bg-[#F2B82E]/10' : 
+                          booking.status === 'Cancelled' ? 'border-red-500/30 text-red-400 bg-red-500/10' :
+                          'border-white/10 text-white/40 bg-white/5'
+                        }`}>
+                          {booking.status}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )) : (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="py-24 text-center border border-dashed border-white/10 bg-white/[0.01] rounded-[3rem]"
+                >
+                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Info className="text-white/40" size={24} />
+                  </div>
+                  <p className="text-white/40 font-black uppercase tracking-[0.2em] text-xs">No Archived Logs Found</p>
+                  <p className="text-white/20 text-[10px] mt-2">Adjust your filters or switch views.</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </main>
@@ -441,12 +318,15 @@ const Dashboard = () => {
 };
 
 const StatCard = ({ label, value, icon }) => (
-  <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden group hover:bg-white/[0.04] transition-all">
-    <div className="absolute top-0 right-0 p-6 text-white/5 group-hover:text-[#F2B82E]/10 transition-colors">
-      {icon}
+  <div className="bg-[#0a0a0a] border border-white/5 p-6 md:p-8 rounded-[2rem] relative overflow-hidden group hover:border-white/10 transition-colors">
+    <div className="absolute -top-4 -right-4 p-8 text-white/[0.03] group-hover:text-[#F2B82E]/10 transition-colors duration-500 transform group-hover:scale-110 group-hover:-rotate-12">
+      {React.cloneElement(icon, { size: 80 })}
     </div>
-    <h3 className="text-4xl font-black italic tracking-tighter mb-1 uppercase">{value}</h3>
-    <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">{label}</p>
+    <div className="relative z-10">
+      <div className="text-white/40 mb-4">{icon}</div>
+      <h3 className="text-4xl md:text-5xl font-black italic tracking-tighter mb-2 uppercase text-white">{value}</h3>
+      <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">{label}</p>
+    </div>
   </div>
 );
 
