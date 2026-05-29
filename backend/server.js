@@ -110,17 +110,25 @@
 
 const express = require('express');
 const app = express();
+
+app.set('trust proxy', true); // Important for correct client IP detection behind proxies/load balancers
+
 const cors = require('cors');
 const http = require('http'); // 1. Native Node HTTP module
 const { Server } = require('socket.io'); // 2. Socket.io Server
 const connectDB = require('./config/db');
 const dotenv = require('dotenv');
 
+
 // Load Models (Required for Socket persistence)
 const Message = require('./models/Message');
 const Conversation = require('./models/Conversation');
 
 dotenv.config();
+
+// Import Rate Limiter Middleware
+const { rateLimit } = require('./middleware/rateLimitor');
+const redisClient = require('./config/redis');
 
 // User Defined Routes
 const authRoutes = require('./routes/authRoutes');
@@ -130,6 +138,7 @@ const chatBotRoutes = require('./routes/chatBotRoutes');
 const chatRoutes = require('./routes/chatRoutes'); // 3. Your new 1-1 Chat Routes
 const { protect } = require('./middleware/authMiddleware');
 
+
 // Connect to Database
 connectDB();
 
@@ -137,6 +146,12 @@ connectDB();
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
+
+// --- TOKEN BUCKET RATE LIMITING ---
+app.use(rateLimit({
+   capacity: 10,
+   refillRate: 1 // 1 token per second
+}));
 
 // --- REST API ROUTES ---
 app.use('/api/auth', authRoutes);
@@ -174,6 +189,70 @@ io.on("connection", (socket) => {
 
     // Handle 1-1 Private Messages
     socket.on("send_message", async (data) => {
+
+        // A. RATE LIMITING LOGIC (Bucket-based using Redis)
+        try {
+
+            const userId = socket.id;
+
+            const key = `socket_bucket:${userId}`;
+
+            const currentTime =
+                Math.floor(Date.now() / 1000);
+
+            let bucket =
+                await redisClient.get(key);
+
+            bucket = bucket
+                ? JSON.parse(bucket)
+                : {
+                    tokens: 5,
+                    lastRefill: currentTime
+                };
+
+            const elapsedTime =
+                currentTime - bucket.lastRefill;
+
+            // Refill 1 token/sec
+            const refill = elapsedTime * 1;
+
+            bucket.tokens = Math.min(
+                5,
+                bucket.tokens + refill
+            );
+
+            bucket.lastRefill = currentTime;
+
+            // No tokens left
+            if (bucket.tokens < 1) {
+
+                socket.emit('rate_limit', {
+                    message: 'Too many messages. Slow down.'
+                });
+
+                return;
+            }
+
+            // Consume token
+            bucket.tokens -= 1;
+
+            await redisClient.set(
+                key,
+                JSON.stringify(bucket),
+                {
+                    EX: 10
+                }
+            );
+
+            // Send message
+            io.to(data.roomId)
+              .emit('receive_message', data);
+
+        } catch (error) {
+
+            console.error(error);
+        }
+
         const { conversationId, senderId, text } = data;
 
         try {
