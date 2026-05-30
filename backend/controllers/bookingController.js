@@ -167,9 +167,54 @@ const updatePaymentStatus = async(req, res) => {
     }
 }
 
+const updateBookingCompletion = async(req, res) => {
+    const bookingId = req.params.id;
+
+    try {
+        const booking = await Booking.findById(bookingId);
+
+        if(!booking) {
+            return res.status(404).json({ message: "Booking record not found" });
+        }
+
+        const item = await Item.findById(booking.item);
+        if (!item) {
+            return res.status(404).json({ message: "Associated item not found" });
+        }
+
+        // Only the owner or renter can confirm the completion
+        if (booking.owner.toString() !== req.user._id.toString() && booking.renter.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: "Unauthorized: You are not part of this booking" });
+        }
+
+        // Update the return verification based on who is confirming
+        if (booking.owner.toString() === req.user._id.toString()) {
+            booking.returnVerification.ownerConfirmed = true;
+        } else if (booking.renter.toString() === req.user._id.toString()) {
+            booking.returnVerification.renterConfirmed = true;
+        }
+
+        await booking.save();
+        console.log("Updated return verification:", booking.returnVerification);
+
+        if (booking.returnVerification.ownerConfirmed && booking.returnVerification.renterConfirmed) {
+            booking.status = "Completed";
+            await booking.save();
+            item.status = "Available";
+            await item.save();
+        }
+
+        res.status(200).json({ message: "Booking completion updated successfully", booking });
+    }catch (error) {
+        console.error("Error updating booking completion:", error);
+        res.status(500).json({ message: "Request Failed", error: error.message });
+    }
+}
+
 module.exports  = {
     updateBookingStatus,
     updatePaymentStatus,
     dashboard,
     createBooking,
+    updateBookingCompletion
 }

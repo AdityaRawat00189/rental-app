@@ -17,6 +17,7 @@ import AssetManager from './pages/AssetManager';
 import Messages from './pages/Messages';
 import ActiveExchange from './pages/ActiveExchange';
 import LifeCycleLogs from './pages/LifeCycleLogs';
+import ReturnsAndArchive from './pages/ReturnAndArchieve'
 
 function App() {
 
@@ -37,6 +38,7 @@ function App() {
           <Route path='/messages/:conversationId' element={<Messages></Messages>}></Route>
           <Route path='/active-exchange' element={<ActiveExchange></ActiveExchange>}></Route>
           <Route path='/product-lifecycle' element={<LifeCycleLogs></LifeCycleLogs>}></Route>
+          <Route path='/returns-and-archive' element={<ReturnsAndArchive></ReturnsAndArchive>}></Route>
         </Routes>
       </div>
 

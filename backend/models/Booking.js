@@ -43,13 +43,18 @@ const bookingSchema = new mongoose.Schema({
     },
     status : {
         type : String,
-        enum : ['Pending','Approved','PickedUp','Returned','Cancelled'],
+        enum : ['Pending','Approved','PickedUp','Returned','Cancelled','Rejected', 'Completed'],
         default : 'Pending',
     },
     paymentStatus : {
         type : String,
         enum : ['Pending','Paid','Failed'],
         default : 'Pending',
+    },
+
+    returnVerification: {
+        ownerConfirmed: { type: Boolean, default: false },
+        renterConfirmed: { type: Boolean, default: false }
     }
 
 },{timestamps: true})
