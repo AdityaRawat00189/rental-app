@@ -66,7 +66,7 @@ const LendItem = () => {
       }
 
     } catch (error) {
-      console.error("Error uploading item:", error);
+      // console.error("Error uploading item:", error);
       alert(error.response?.data?.message || "Internal Server Error");
     }finally {
       setLoading(false);

@@ -83,7 +83,7 @@ const ProductDetail = () => {
 
       navigate(`/messages/${res.data._id}`);
     } catch (error) {
-      console.error("Protocol Error: Unable to initiate chat", error);
+      // console.error("Protocol Error: Unable to initiate chat", error);
     }
   }
 
@@ -102,7 +102,7 @@ const ProductDetail = () => {
         });
         setItem(response.data.item);
       } catch (error) {
-        console.error("Protocol Error: Data Retrieval Failed", error);
+        // console.error("Protocol Error: Data Retrieval Failed", error);
       } finally {
         setLoading(false);
       }

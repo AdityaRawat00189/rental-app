@@ -32,7 +32,7 @@ const LifecycleLogs = () => {
         });
         setBookings(res.data);
       } catch (error) {
-        console.error("Protocol Error: Fetch failed", error);
+        // console.error("Protocol Error: Fetch failed", error);
       } finally {
         setLoading(false);
       }

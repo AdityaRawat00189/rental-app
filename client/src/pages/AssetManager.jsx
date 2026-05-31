@@ -22,7 +22,7 @@ const AssetManager = () => {
 
                 setItems(res.data.items);
             } catch (error) {
-                console.error("Inventory Sync Failed", error);
+                // console.error("Inventory Sync Failed", error);
             } finally {
                 setLoading(false);
             }
@@ -43,7 +43,7 @@ const AssetManager = () => {
             )
             
         } catch (error) {
-            console.error("Status Update Failed", error);
+            // console.error("Status Update Failed", error);
         } finally {
             setRefresh(prev => !prev);
         }
@@ -58,7 +58,7 @@ const AssetManager = () => {
                 { headers: { Authorization: `Bearer ${user.token}` }}
             )
         } catch (error) {
-            console.error("Deletion Failed", error);
+            // console.error("Deletion Failed", error);
         } finally {
             setRefresh(prev => !prev);
         }

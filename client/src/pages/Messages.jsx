@@ -36,7 +36,7 @@ const Messages = () => {
       });
       setInbox(res.data);
     } catch (error) {
-      console.error("Failed to fetch secure inbox:", error);
+      // console.error("Failed to fetch secure inbox:", error);
     }
   }, [user?.token]);
 
@@ -49,7 +49,7 @@ const Messages = () => {
       });
       setMessages(res.data);
     } catch (error) {
-      console.error("Failed to restore protocol history:", error);
+      // console.error("Failed to restore protocol history:", error);
     } finally {
       setIsLoading(false);
     }

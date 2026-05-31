@@ -30,7 +30,7 @@ const ActiveExchanges = () => {
         });
         setBookings(res.data);
       } catch (error) {
-        console.error("Protocol Error: Fetch failed", error);
+        // console.error("Protocol Error: Fetch failed", error);
       } finally {
         setLoading(false);
       }
@@ -60,7 +60,7 @@ const ActiveExchanges = () => {
       );
       navigate(`/messages/${res.data._id}`);
     } catch (error) {
-      console.error("Protocol Error: Unable to initiate chat", error);
+      // console.error("Protocol Error: Unable to initiate chat", error);
       alert("Protocol Error: Unable to connect secure channel.");
     }
   };
@@ -80,7 +80,7 @@ const ActiveExchanges = () => {
       // Optimistic UI update
       setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, paymentStatus: newStatus } : b));
     } catch (error) {
-      console.error("Protocol Error: Financial sync failed", error);
+      // console.error("Protocol Error: Financial sync failed", error);
       // Fallback optimistic update if backend route isn't strictly set up yet, to keep the UI flowing
       setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, paymentStatus: newStatus } : b));
     }

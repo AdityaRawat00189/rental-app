@@ -30,7 +30,7 @@ const Dashboard = () => {
       setBookings(res.data);
       setLoading(false);
     } catch (error) {
-      console.error("Fetch error:", error);
+      // console.error("Fetch error:", error);
       setLoading(false);
     }
   };
@@ -72,7 +72,7 @@ const Dashboard = () => {
 
       navigate(`/messages/${res.data._id}`);
     } catch (error) {
-      console.error("Protocol Error: Unable to initiate chat", error);
+      // console.error("Protocol Error: Unable to initiate chat", error);
       alert("Protocol Error: Unable to connect secure channel.");
     }
   };

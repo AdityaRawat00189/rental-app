@@ -19,15 +19,15 @@ const Home = () => {
         const token = user ? JSON.parse(user).token : null;
 
         const BASE_URL = import.meta.env.VITE_BASE_URL;
-        console.log('Fetching items with token:', token);
+        // console.log('Fetching items with token:', token);
         const response = await axios.get(`${BASE_URL}/api/item`, {
           headers: { Authorization: `Bearer ${token}` },
           category: 'All'
         });
-        console.log("Backend response:", response.data);
+        // console.log("Backend response:", response.data);
         setItems(response.data.items);
       } catch (error) {
-        console.error("Error fetching items:", error);
+        // console.error("Error fetching items:", error);
         if (error?.response?.status === 401) {
           localStorage.removeItem('user');
           Navigate('/login');

@@ -32,7 +32,7 @@ const ReturnsAndArchive = () => {
         });
         setBookings(res.data);
       } catch (error) {
-        console.error("Protocol Error: Fetch failed", error);
+        // console.error("Protocol Error: Fetch failed", error);
       } finally {
         setLoading(false);
       }
@@ -54,7 +54,7 @@ const ReturnsAndArchive = () => {
       
       setRefreshTrigger(prev => prev + 1); // Refresh data to show "Awaiting Counterparty" or move to Archives
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       alert("Protocol Error: Failed to register return handshake.");
     }
   };
@@ -76,7 +76,7 @@ const ReturnsAndArchive = () => {
       alert("Penalty Protocol Initiated. Institutional mediation will commence.");
       setRefreshTrigger(prev => prev + 1);
     } catch (error) {
-      console.error("Protocol Error: Penalty initiation failed", error);
+      // console.error("Protocol Error: Penalty initiation failed", error);
       alert("Protocol Error: Unable to initiate penalty.");
     }
   };
