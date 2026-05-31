@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet} from 'react-router-dom';
 
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
@@ -19,32 +19,56 @@ import ActiveExchange from './pages/ActiveExchange';
 import LifeCycleLogs from './pages/LifeCycleLogs';
 import ReturnsAndArchive from './pages/ReturnAndArchieve'
 
-function App() {
+import Sidebar from './components/Sidebar';
 
+const SidebarLayout = () => {
   return (
-    <Router >
-      <Navbar></Navbar>
-      <div className="bg-[#1C2E4A]">
+    <div className="flex w-full">
+      <Sidebar />
+      <div className="flex-1 min-w-0 lg:pl-[80px]">
+        <Outlet />
+      </div>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      {/* Navbar appears on all pages */}
+      <Navbar />
+
+      {/* Main wrapper with your dark background */}
+      <div className="bg-[#1C2E4A] min-h-screen">
         <Routes>
-          <Route path='/' element={<Home></Home>} ></Route>
-          <Route path='/home2' element={<Home2></Home2>} ></Route>
-          <Route path='/ProductDetail/:id' element={<ProductDetail></ProductDetail>} ></Route>
-          <Route path='/lend' element={<LendItem></LendItem>}></Route>
-          <Route path='/login' element={<Login></Login>}></Route>
-          <Route path='/signup' element={<Signup></Signup>}></Route>
-          <Route path='/dashboard' element={<Dashboard></Dashboard>}></Route>
-          <Route path='/my-listings' element={<AssetManager></AssetManager>}></Route>
-          <Route path='/messages' element={<Messages></Messages>}></Route>
-          <Route path='/messages/:conversationId' element={<Messages></Messages>}></Route>
-          <Route path='/active-exchange' element={<ActiveExchange></ActiveExchange>}></Route>
-          <Route path='/product-lifecycle' element={<LifeCycleLogs></LifeCycleLogs>}></Route>
-          <Route path='/returns-and-archive' element={<ReturnsAndArchive></ReturnsAndArchive>}></Route>
+          {/* ==========================================
+              PUBLIC PAGES (No Sidebar)
+              ========================================== */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+
+          {/* ==========================================
+              INTERNAL PAGES (With Sidebar)
+              ========================================== */}
+          <Route element={<SidebarLayout />}>
+            <Route path="/home2" element={<Home2 />} />
+            <Route path="/ProductDetail/:id" element={<ProductDetail />} />
+            <Route path="/lend" element={<LendItem />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/my-listings" element={<AssetManager />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/messages/:conversationId" element={<Messages />} />
+            <Route path="/active-exchange" element={<ActiveExchange />} />
+            <Route path="/product-lifecycle" element={<LifeCycleLogs />} />
+            <Route path="/returns-and-archive" element={<ReturnsAndArchive />} />
+          </Route>
         </Routes>
       </div>
 
-      <ChatWidget></ChatWidget>
+      {/* Chat widget appears on all pages */}
+      <ChatWidget />
     </Router>
-  )
+  );
 }
-
 export default App

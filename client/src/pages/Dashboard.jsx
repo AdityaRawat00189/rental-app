@@ -105,21 +105,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-[#F2B82E] selection:text-black font-sans">
       
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-20 border-r border-white/5 bg-black hidden lg:flex flex-col items-center py-10 gap-10 z-50">
-        <div className="text-[#F2B82E] font-black text-2xl italic tracking-tighter">CL</div>
-        <nav className="flex flex-col gap-6 w-full px-4">
-          <div className="p-4 bg-[#F2B82E] text-black rounded-2xl shadow-[0_0_20px_rgba(242,184,46,0.2)] cursor-pointer flex justify-center">
-            <LayoutDashboard size={22} />
-          </div>
-          <div 
-            className="p-4 text-white/30 hover:text-white hover:bg-white/5 rounded-2xl cursor-pointer transition-all flex justify-center"
-            onClick={() => navigate('/my-listings')}
-          >
-            <Handshake size={22} />
-          </div>
-        </nav>
-      </aside>
 
       <main className="lg:pl-20 pb-20">
         
@@ -147,7 +132,7 @@ const Dashboard = () => {
                 />
                </div>
                <button 
-                 onClick={() => navigate('/list-item')} 
+                 onClick={() => navigate('/lend')} 
                  className="bg-[#F2B82E] text-black px-6 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(242,184,46,0.15)] flex items-center justify-center gap-2 flex-shrink-0"
                >
                  <Plus size={16} /> New Asset

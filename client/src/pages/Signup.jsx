@@ -54,6 +54,7 @@ const Signup = () => {
       const response = await axios.post(`${BASE_URL}/api/auth/signup`, formData);
       if (response.status === 201) {
         localStorage.setItem('user', JSON.stringify(response.data));
+        localStorage.setItem('userName', JSON.stringify(response.data.name));
         navigate('/home2');
         window.location.reload();
       }

@@ -28,6 +28,7 @@ const Login = () => {
 
       if (response.data.token) {
         localStorage.setItem('user', JSON.stringify(response.data));
+        localStorage.setItem('userName', JSON.stringify(response.data.name));
         navigate('/'); // Navigation to neutral route
         window.location.reload();
       }

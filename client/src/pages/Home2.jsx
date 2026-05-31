@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Footer from '../components/Footer';
 import Category from '../components/category';
 import ItemCard from '../components/MainItemCard';
-import { Loader2, Sparkles, Box, ArrowRight } from 'lucide-react';
+import { Loader2, Sparkles, Box, ArrowRight, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
@@ -77,12 +77,30 @@ const Home = () => {
             </h2>
           </div>
           
-          <div className="hidden lg:block text-right">
-             <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Network Status</p>
-             <div className="flex items-center gap-2 justify-end">
-                <span className="text-white font-mono text-sm">Operational</span>
-                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-             </div>
+          <div className="hidden lg:flex flex-col items-end gap-10 text-right">
+            {/* Messages Button */}
+            <div>
+              <button
+                onClick={() => Navigate('/messages')}
+                className="group inline-flex items-center gap-3 rounded-md border border-white/10 bg-[#121212] px-6 py-3 text-[#F2B82E] text-sm font-bold uppercase tracking-widest shadow-[4px_4px_0px_rgba(242,184,46,0.15)] hover:shadow-[2px_2px_0px_rgba(242,184,46,0.3)] hover:translate-y-[2px] hover:translate-x-[2px] transition-all active:shadow-none active:translate-y-[4px] active:translate-x-[4px]"
+              >
+                <MessageSquare size={18} strokeWidth={2.5} />
+                Messages
+              </button>
+            </div>
+
+            {/* Network Status */}
+            <div className="flex flex-col items-end gap-1.5">
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">
+                System
+              </p>
+              <div className="flex items-center gap-2.5 rounded border border-white/5 bg-white/[0.03] px-3 py-1.5 backdrop-blur-sm">
+                <span className="text-gray-300 font-mono text-[11px] uppercase tracking-wider">
+                  Operational
+                </span>
+                <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-pulse"></div>
+              </div>
+            </div>
           </div>
         </motion.div>
 

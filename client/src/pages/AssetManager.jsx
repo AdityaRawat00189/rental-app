@@ -72,18 +72,7 @@ const AssetManager = () => {
 
     return (
         <div className="min-h-screen bg-[#050505] text-white pt-32 pb-20 px-8 ">
-            {/* Sidebar - Lean & Tech Focused */}
-            <aside className="fixed left-0 top-0 h-full w-20 border-r border-white/5 bg-black hidden lg:flex flex-col items-center py-10 gap-10 z-50">
-                <div className="text-[#F2B82E] font-black text-xl italic tracking-tighter">CL</div>
-                <nav className="flex flex-col gap-8">
-                <div className="p-3 text-white/20 hover:text-white cursor-pointer transition-colors">
-                    <LayoutDashboard size={20} onClick={() => navigate('/dashboard')} />
-                </div>
-                <div className="p-3 bg-[#F2B82E] text-black rounded-2xl shadow-[0_0_20px_rgba(242,184,46,0.2)] cursor-pointer">
-                    <Handshake size={20} onClick={() => navigate('/my-listings')} />
-                </div>
-                </nav>
-            </aside>
+            
             <div className="max-w-7xl mx-auto">
 
                 {/* Header Module */}
