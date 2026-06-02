@@ -138,6 +138,8 @@ const chatBotRoutes = require('./routes/chatBotRoutes');
 const chatRoutes = require('./routes/chatRoutes'); // 3. Your new 1-1 Chat Routes
 const { protect } = require('./middleware/authMiddleware');
 
+const { schedulePickupAndReturnTasks } = require('./jobs/cronSchedulers');
+
 
 // Connect to Database
 connectDB();
@@ -152,6 +154,8 @@ app.use(rateLimit({
    capacity: 10,
    refillRate: 1 // 1 token per second
 }));
+
+schedulePickupAndReturnTasks();
 
 // --- REST API ROUTES ---
 app.use('/api/auth', authRoutes);

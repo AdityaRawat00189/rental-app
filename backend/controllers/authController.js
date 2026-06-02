@@ -42,7 +42,7 @@ async function handleSendEmail(email, newOTP) {
     // OTP SEND TO EMAIL
     await sendEmail({
         email: email,
-        subject: 'Your College Rental Verification Code',
+        subject: 'CampusLink Verification Code',
         message: `Your OTP is ${newOTP}. It expires in 15 minutes`,
         html: htmlTemplate
     });
