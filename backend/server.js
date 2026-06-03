@@ -141,6 +141,8 @@ const { protect } = require('./middleware/authMiddleware');
 const { schedulePickupAndReturnTasks } = require('./jobs/cronSchedulers');
 
 
+require('./workers/emailWorker'); // Start the email worker when the server starts
+
 // Connect to Database
 connectDB();
 

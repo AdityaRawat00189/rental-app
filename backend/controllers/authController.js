@@ -6,6 +6,7 @@ const sendEmail = require('../utils/sendEmail');
 
 const redisClient = require('../config/redis');
 
+const { notificationQueue } = require('../queues/emailQueue');
 
 function generateToken(id){
     const my_secret_key = process.env.MY_SECRET_KEY;
@@ -144,7 +145,11 @@ const sendOTP = async (req,res) => {
 
         console.log(`[RENDER REDIS] Saved OTP ${otp} for ${email}. Self-destructing in 5m.`);
 
-        await handleSendEmail(email, otp);
+        // await handleSendEmail(email, otp);
+        await notificationQueue.add('send-otp', {
+            email,
+            otpCode: otp
+        })
 
 
         return res.status(200).json({message: "OTP  sent successfully!"});

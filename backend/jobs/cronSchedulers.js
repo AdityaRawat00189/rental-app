@@ -5,7 +5,7 @@ const pickupAndReturnTasks = require('./PickupAndReturnTasks');
 
 function schedulePickupAndReturnTasks() {
 
-    cron.schedule('25 3 * * *', () => {
+    cron.schedule('30 8 * * *', () => {
         console.log('⏰ 8:00 AM reached. Firing pickup & return alerts...');
         pickupAndReturnTasks();
     }, {
