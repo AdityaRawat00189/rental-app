@@ -12,6 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@bull-board/api": "^7.1.5",
+    "@bull-board/express": "^7.1.5",
     "@google/genai": "^1.49.0",
     "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",

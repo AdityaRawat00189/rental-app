@@ -149,6 +149,13 @@ const sendOTP = async (req,res) => {
         await notificationQueue.add('send-otp', {
             email,
             otpCode: otp
+        },{
+            priority: 1,
+            attempts: 5, // Retry up to 5 times if sending fails
+            backoff: {
+                type: 'exponential',
+                delay: 2000, 
+            }
         })
 
 

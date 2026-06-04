@@ -109,6 +109,11 @@
 
 
 const express = require('express');
+
+const { createBullBoard } = require('@bull-board/api');
+const { BullMQAdapter } = require('@bull-board/api/bullMQAdapter');
+const { ExpressAdapter } = require('@bull-board/express');
+
 const app = express();
 
 app.set('trust proxy', true); // Important for correct client IP detection behind proxies/load balancers
@@ -138,6 +143,8 @@ const chatBotRoutes = require('./routes/chatBotRoutes');
 const chatRoutes = require('./routes/chatRoutes'); // 3. Your new 1-1 Chat Routes
 const { protect } = require('./middleware/authMiddleware');
 
+const { notificationQueue } = require('./queues/emailQueue');
+
 const { schedulePickupAndReturnTasks } = require('./jobs/cronSchedulers');
 
 
@@ -158,6 +165,17 @@ app.use(rateLimit({
 }));
 
 schedulePickupAndReturnTasks();
+
+// --- BULL BOARD SETUP ---
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath('/admin/queues');
+
+createBullBoard({
+    queues: [new BullMQAdapter(notificationQueue)],
+    serverAdapter: serverAdapter,
+});
+
+app.use('/admin/queues', serverAdapter.getRouter());
 
 // --- REST API ROUTES ---
 app.use('/api/auth', authRoutes);
