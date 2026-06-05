@@ -12,7 +12,7 @@ const createBooking = async(req, res) => {
     // console.log("Hit the booking controller");
     try {
         // console.log("Received booking request from user");
-        const { start, end , pickupLocation, returnLocation, pickupTime, returnTime } = req.body;
+        const { start, end , pickupLocation, returnLocation, pickupTime, returnTime, totalPrice } = req.body;
         // console.log(start, end);
         const itemId = req.params.id; // From the URL /create/:id
         const borrowerId = req.user._id;
@@ -41,6 +41,7 @@ const createBooking = async(req, res) => {
             item: itemId,
             renter: req.user._id,
             owner: item.owner,
+            totalPrice: totalPrice || { total: 0, securityDeposit: 0 },
             startDate,
             endDate,
             pickupLocation,
@@ -156,9 +157,25 @@ const updatePaymentStatus = async(req, res) => {
             return res.status(404).json({ message: "Booking record not found" });
         }
         // Update the payment status (example: set to "Paid")
-        booking.paymentStatus = "Paid";
-        booking.status = "PickedUp";
+        // booking.paymentStatus = "Paid";
+        const userId = req.user._id.toString();
+        const isOwner = booking.owner.toString() === userId;
+        const isRenter = booking.renter.toString() === userId;
+
+        if (isOwner) {
+            booking.paymentStatus.ownerConfirmed = true;
+        }
+        if (isRenter) {
+            booking.paymentStatus.renterConfirmed = true;
+        }
+
+        if (booking.paymentStatus.ownerConfirmed && booking.paymentStatus.renterConfirmed) {
+            booking.paymentStatus.status = "Paid";
+            booking.status = "PickedUp";
+        }
         await booking.save();
+
+        await booking.populate(['item', 'owner', 'renter']);
 
         res.status(200).json({ message: "Payment status updated successfully", booking });
     } catch (error) {

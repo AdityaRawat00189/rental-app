@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ArrowLeft, CheckCircle2, MapPin, Clock, 
-  MessageSquare, Zap, ShieldCheck, ArrowRightLeft, Wallet, AlertCircle
+  MessageSquare, Zap, ShieldCheck, ArrowRightLeft, Wallet, AlertCircle,
+  Banknote, CreditCard, X
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +12,10 @@ const ActiveExchanges = () => {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // --- Payment Modal State ---
+  const [paymentModal, setPaymentModal] = useState({ isOpen: false, bookingId: null, price: { total: 0, securityDeposit: 0 } });
+  const [onlineError, setOnlineError] = useState("");
 
   const userStr = localStorage.getItem('user');
   const currentUser = userStr ? JSON.parse(userStr) : null;
@@ -30,7 +35,7 @@ const ActiveExchanges = () => {
         });
         setBookings(res.data);
       } catch (error) {
-        // console.error("Protocol Error: Fetch failed", error);
+        console.error("Protocol Error: Fetch failed", error);
       } finally {
         setLoading(false);
       }
@@ -38,10 +43,10 @@ const ActiveExchanges = () => {
     fetchData();
   }, [currentUserId, navigate, currentUser?.token]);
 
-  // --- Filtering Logic: ALL Approved Exchanges (Both Lending & Borrowing) ---
+  // --- Filtering Logic ---
   const activeExchanges = useMemo(() => {
     return bookings.filter(b => {
-      if (b.status !== 'Approved') return false; 
+      if (!['Approved', 'PickedUp'].includes(b.status)) return false; 
       const isLender = b.owner?._id === currentUserId;
       const isRenter = b.renter?._id === currentUserId;
       return isLender || isRenter;
@@ -60,30 +65,46 @@ const ActiveExchanges = () => {
       );
       navigate(`/messages/${res.data._id}`);
     } catch (error) {
-      // console.error("Protocol Error: Unable to initiate chat", error);
       alert("Protocol Error: Unable to connect secure channel.");
     }
   };
 
   // --- Financial Transaction Logic ---
-  const handlePaymentUpdate = async (bookingId, newStatus) => {
+  const handlePaymentUpdate = async (bookingId) => {
     try {
       const token = currentUser?.token;
       const BASE_URL = import.meta.env.VITE_BASE_URL;
       
-      // Update backend payment status (Assuming an endpoint exists for this)
-      await axios.patch(`${BASE_URL}/api/booking/payment/${bookingId}`, 
-        { paymentStatus: newStatus },
+      const response = await axios.patch(`${BASE_URL}/api/booking/payment/${bookingId}`, 
+        {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Optimistic UI update
-      setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, paymentStatus: newStatus } : b));
+      // Update the booking with the new payment status from the backend
+      setBookings(prev => prev.map(b => b._id === bookingId ? response.data.booking : b));
     } catch (error) {
-      // console.error("Protocol Error: Financial sync failed", error);
-      // Fallback optimistic update if backend route isn't strictly set up yet, to keep the UI flowing
-      setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, paymentStatus: newStatus } : b));
+      console.error("Payment update failed:", error);
     }
+  };
+
+  // --- Portal Handlers ---
+  const openPaymentPortal = (bookingId, price) => {
+    setOnlineError("");
+    setPaymentModal({ isOpen: true, bookingId, price });
+  };
+
+  const closePaymentPortal = () => {
+    setPaymentModal({ isOpen: false, bookingId: null, price: 0 });
+    setTimeout(() => setOnlineError(""), 300); // Clear error after animation
+  };
+
+  const executeCashPayment = async () => {
+    await handlePaymentUpdate(paymentModal.bookingId);
+    closePaymentPortal();
+  };
+
+  const executeOnlinePayment = () => {
+    setOnlineError("Transaction Declined: Gateway unavailable.");
   };
 
   if (loading) return (
@@ -94,7 +115,7 @@ const ActiveExchanges = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#F2B82E] selection:text-black font-sans pt-24 pb-20">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#F2B82E] selection:text-black font-sans pt-24 pb-20 relative">
       <div className="max-w-6xl mx-auto px-6 md:px-8">
         
         {/* Navigation */}
@@ -129,7 +150,11 @@ const ActiveExchanges = () => {
             {activeExchanges.length > 0 ? activeExchanges.map((booking) => {
               const isLender = booking.owner?._id === currentUserId;
               const counterparty = isLender ? booking.renter : booking.owner;
-              const isPaid = booking.paymentStatus === 'Paid';
+              
+              // New Payment State Variables
+              const isPaid = booking.paymentStatus?.status === 'Paid';
+              const hasOwnerConfirmed = booking.paymentStatus?.ownerConfirmed;
+              const hasRenterConfirmed = booking.paymentStatus?.renterConfirmed;
               
               return (
                 <motion.div 
@@ -166,7 +191,8 @@ const ActiveExchanges = () => {
                           Ref: {booking._id.slice(-6).toUpperCase()}
                         </p>
                         <p className="text-[10px] font-black text-[#F2B82E] tracking-widest italic border-l border-white/10 pl-3">
-                          ₹{booking.totalPrice || 0}
+                          <span>₹{booking.totalPrice?.total || 0}</span>
+                          <span className="block text-[8px] text-white/40">Security: ₹{booking.totalPrice?.securityDeposit || 0}</span>
                         </p>
                       </div>
                     </div>
@@ -233,31 +259,43 @@ const ActiveExchanges = () => {
                       {/* Payment Module */}
                       {isPaid ? (
                         <div className="w-full bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(34,197,94,0.1)]">
-                          <CheckCircle2 size={14} /> Payment Cleared
+                          <CheckCircle2 size={14} /> Handover & Payment Cleared
                         </div>
                       ) : (
                         <>
                           {!isLender ? (
                             // Borrower View
-                            <div className="space-y-1 w-full">
-                              <button 
-                                onClick={() => handlePaymentUpdate(booking._id, 'Paid')}
-                                className="w-full bg-[#F2B82E] text-black px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(242,184,46,0.2)]"
-                              >
-                                <Wallet size={14} /> Pay Now (₹{booking.totalPrice})
-                              </button>
-                              <p className="text-[8px] font-bold text-red-400/80 uppercase tracking-widest text-center flex items-center justify-center gap-1 mt-1.5">
-                                <AlertCircle size={10} /> Always pay when both parties are available
-                              </p>
-                            </div>
+                            hasRenterConfirmed ? (
+                              <div className="w-full bg-[#F2B82E]/10 border border-[#F2B82E]/20 text-[#F2B82E] px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                                <Clock size={14} /> Awaiting Owner Confirmation
+                              </div>
+                            ) : (
+                              <div className="space-y-1 w-full">
+                                <button 
+                                  onClick={() => openPaymentPortal(booking._id, booking.totalPrice)}
+                                  className="w-full bg-[#F2B82E] text-black px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(242,184,46,0.2)]"
+                                >
+                                  <Wallet size={14} /> Pay Now (₹{booking.totalPrice?.total || 0})
+                                </button>
+                                <p className="text-[8px] font-bold text-red-400/80 uppercase tracking-widest text-center flex items-center justify-center gap-1 mt-1.5">
+                                  <AlertCircle size={10} /> Always pay when both parties are available
+                                </p>
+                              </div>
+                            )
                           ) : (
                             // Lender View
-                            <button 
-                              onClick={() => handlePaymentUpdate(booking._id, 'Paid')}
-                              className="w-full bg-transparent border border-[#F2B82E]/50 text-[#F2B82E] px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#F2B82E] hover:text-black active:scale-95 transition-all flex items-center justify-center gap-2"
-                            >
-                              <CheckCircle2 size={14} /> Mark Payment Received
-                            </button>
+                            hasOwnerConfirmed ? (
+                              <div className="w-full bg-[#F2B82E]/10 border border-[#F2B82E]/20 text-[#F2B82E] px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                                <Clock size={14} /> Awaiting Renter Confirmation
+                              </div>
+                            ) : (
+                              <button 
+                                onClick={() => handlePaymentUpdate(booking._id)}
+                                className="w-full bg-transparent border border-[#F2B82E]/50 text-[#F2B82E] px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#F2B82E] hover:text-black active:scale-95 transition-all flex items-center justify-center gap-2"
+                              >
+                                <CheckCircle2 size={14} /> Mark Payment Received
+                              </button>
+                            )
                           )}
                         </>
                       )}
@@ -281,8 +319,111 @@ const ActiveExchanges = () => {
             )}
           </AnimatePresence>
         </div>
-
       </div>
+
+      {/* --- PAYMENT PORTAL OVERLAY --- */}
+      <AnimatePresence>
+        {paymentModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closePaymentPortal}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            
+            {/* Modal Content */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 p-8 rounded-[2rem] shadow-2xl overflow-hidden"
+            >
+              <button 
+                onClick={closePaymentPortal}
+                className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="mb-8">
+                <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white mb-2">
+                  Settle <span className="text-[#F2B82E]">Payment</span>
+                </h2>
+                <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">
+                  Total: <span className="text-white">₹{paymentModal.price?.total || 0}</span>
+                  <span className="block text-[10px] text-white/40 mt-1">Security Deposit: ₹{paymentModal.price?.securityDeposit || 0}</span>
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Option 1: Cash (Fixed Overflow) */}
+                <button 
+                  onClick={executeCashPayment}
+                  className="w-full flex items-start justify-between p-4 bg-white/[0.02] border border-white/10 rounded-2xl hover:bg-green-500/10 hover:border-green-500/30 transition-all group"
+                >
+                  <div className="flex items-start gap-4 w-full">
+                    <div className="p-3 bg-white/5 rounded-xl group-hover:bg-green-500/20 transition-colors mt-1 flex-shrink-0">
+                      <Banknote size={20} className="text-white group-hover:text-green-500" />
+                    </div>
+                    
+                    <div className="text-left flex flex-col gap-1.5 flex-1 min-w-0">
+                      <p className="text-sm font-black uppercase tracking-widest text-white group-hover:text-green-500 transition-colors truncate">Cash on Handover</p>
+                      <p className="text-[10px] text-white/40 font-medium leading-snug">Pay directly during the physical meetup</p>
+                      
+                      <div className="flex items-start gap-1.5 mt-1.5 bg-red-500/10 border border-red-500/20 px-2.5 py-2 rounded-lg w-full">
+                        <AlertCircle size={10} className="text-red-400 mt-0.5 flex-shrink-0" />
+                        <span className="text-[8px] font-black text-red-400 uppercase tracking-widest whitespace-normal leading-tight">
+                          Note: We will not be responsible for refund
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Option 2: Online */}
+                <button 
+                  onClick={executeOnlinePayment}
+                  className="w-full flex items-center justify-between p-4 bg-white/[0.02] border border-white/10 rounded-2xl hover:bg-red-500/10 hover:border-red-500/30 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/5 rounded-xl group-hover:bg-red-500/20 transition-colors flex-shrink-0">
+                      <CreditCard size={20} className="text-white group-hover:text-red-500" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-black uppercase tracking-widest text-white group-hover:text-red-500 transition-colors">Pay Online</p>
+                      <p className="text-[10px] text-white/40 font-medium">UPI, Cards, Netbanking</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {/* Error Message Animation */}
+              <AnimatePresence>
+                {onlineError && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0, mt: 0 }}
+                    animate={{ opacity: 1, height: 'auto', mt: 16 }}
+                    exit={{ opacity: 0, height: 0, mt: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-start gap-3">
+                      <AlertCircle size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-red-400/90 leading-relaxed">
+                        {onlineError}
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

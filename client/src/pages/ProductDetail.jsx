@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import { 
   ArrowLeft, ShieldCheck, MapPin, User, 
-  Calendar, Zap, MessageSquare, Loader2, Clock
+  Calendar, Zap, MessageSquare, Loader2, Clock, ShieldAlert
 } from 'lucide-react';
 
 import BrandSlider from '../components/BrandSlider';
@@ -25,9 +25,18 @@ const ProductDetail = () => {
   const [pickupLocation, setPickupLocation] = useState('');
   const [returnLocation, setReturnLocation] = useState('');
 
+  // --- Financial Estimation Logic ---
+  const diffDays = startDate && endDate 
+    ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))) 
+    : 0;
+
+  const rentTotal = item ? (diffDays * item.pricePerDay) : 0;
+  const securityDeposit = item?.securityDeposit || 0; 
+  const totalPayable = rentTotal + securityDeposit;
+
   const handleRent = async (item) => {
-    const user = localStorage.getItem('user');
-    if(!user) {
+    const userStr = localStorage.getItem('user');
+    if(!userStr) {
       navigate('/login');
       return;
     }
@@ -50,7 +59,7 @@ const ProductDetail = () => {
     }
 
     try {
-      const token = user ? JSON.parse(user).token : null;
+      const token = JSON.parse(userStr).token;
       const BASE_URL = import.meta.env.VITE_BASE_URL;
       
       await axios.post(`${BASE_URL}/api/booking/create/${item._id}`, {
@@ -59,7 +68,12 @@ const ProductDetail = () => {
         pickupTime: pickupTime,
         returnTime: returnTime,
         pickupLocation: pickupLocation,
-        returnLocation: returnLocation
+        returnLocation: returnLocation,
+        // Flat mapping to support your backend schema
+        totalPrice: {
+          total: totalPayable,
+          securityDeposit: securityDeposit,
+        }
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -83,7 +97,7 @@ const ProductDetail = () => {
 
       navigate(`/messages/${res.data._id}`);
     } catch (error) {
-      // console.error("Protocol Error: Unable to initiate chat", error);
+      console.error("Protocol Error: Unable to initiate chat", error);
     }
   }
 
@@ -95,14 +109,14 @@ const ProductDetail = () => {
             navigate('/login');
             return;
         }
-        const token = user ? JSON.parse(user).token : null;
+        const token = JSON.parse(user).token;
         const BASE_URL = import.meta.env.VITE_BASE_URL;
         const response = await axios.get(`${BASE_URL}/api/item/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setItem(response.data.item);
       } catch (error) {
-        // console.error("Protocol Error: Data Retrieval Failed", error);
+        console.error("Protocol Error: Data Retrieval Failed", error);
       } finally {
         setLoading(false);
       }
@@ -118,8 +132,6 @@ const ProductDetail = () => {
       </div>
     );
   }
-
-  const diffDays = startDate && endDate ? Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) : 0;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-12 selection:bg-[#F2B82E] selection:text-black font-sans">
@@ -142,7 +154,7 @@ const ProductDetail = () => {
           <motion.div className="lg:col-span-6 xl:col-span-7 lg:sticky lg:top-24 space-y-6">
             <div className="relative rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-white/5">
               <BrandSlider images={item.images} />
-              <div className="absolute top-6 left-6 z-10">
+              <div className="absolute top-6 left-6 z-10 flex gap-2">
                 <span className="bg-black/60 backdrop-blur-md border border-white/10 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
                   ID: {id.slice(-6).toUpperCase()}
                 </span>
@@ -162,9 +174,21 @@ const ProductDetail = () => {
               <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-[0.95] uppercase italic text-white">
                 {item.title}
               </h1>
-              <div className="flex items-center gap-3 pt-2">
-                <span className="text-3xl font-black text-white italic">₹{item.pricePerDay}</span>
-                <span className="text-white/30 text-[10px] font-bold uppercase tracking-widest mt-2">/ Daily Rate</span>
+              <div className="flex items-center flex-wrap gap-4 pt-2">
+                <div className="flex items-end gap-1">
+                  <span className="text-3xl font-black text-white italic leading-none">₹{item.pricePerDay}</span>
+                  <span className="text-white/30 text-[10px] font-bold uppercase tracking-widest mb-1">/ Daily</span>
+                </div>
+                
+                {/* Security Deposit Badge */}
+                {securityDeposit > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <ShieldAlert size={12} className="text-blue-400" />
+                    <span className="text-blue-400 text-[10px] font-black uppercase tracking-widest">
+                      ₹{securityDeposit} Deposit Required
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -267,18 +291,40 @@ const ProductDetail = () => {
                 </div>
               </div>
               
-              {/* Estimation Footer */}
+              {/* --- Itemized Estimation Footer --- */}
               <div className="pt-4 mt-4 border-t border-white/10">
-                <div className="flex items-end justify-between bg-black/30 p-4 rounded-xl border border-white/5">
-                  <span className="text-xs font-black text-white/50 uppercase tracking-widest">Total Est:</span>
+                <div className="bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
+                  
                   {diffDays > 0 ? (
-                    <div className="text-right">
-                      <div className="text-2xl font-black text-[#F2B82E] leading-none">₹{diffDays * item.pricePerDay}</div>
-                      <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">{diffDays} Days</div>
-                    </div>
+                    <>
+                      {/* Breakdown */}
+                      <div className="space-y-2 border-b border-white/5 pb-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Rent ({diffDays} Days)</span>
+                          <span className="text-xs font-bold text-white">₹{rentTotal}</span>
+                        </div>
+                        {securityDeposit > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Security Deposit <span className="text-green-500/80 lowercase italic">(refundable)</span></span>
+                            <span className="text-xs font-bold text-white">₹{securityDeposit}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Total */}
+                      <div className="flex items-end justify-between pt-1">
+                        <span className="text-xs font-black text-white/60 uppercase tracking-widest">Total Payable:</span>
+                        <div className="text-right">
+                          <div className="text-3xl font-black text-[#F2B82E] leading-none italic tracking-tighter">₹{totalPayable}</div>
+                        </div>
+                      </div>
+                    </>
                   ) : (
-                    <span className="text-sm font-bold text-white/20 italic">Select Dates</span>
+                    <div className="text-center py-2">
+                      <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Select Deployment Dates to Calculate Cost</span>
+                    </div>
                   )}
+
                 </div>
               </div>
             </div>

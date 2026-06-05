@@ -90,7 +90,7 @@ const Dashboard = () => {
     const asLender = bookings.filter(b => b.owner?._id === currentUserId);
     return {
       activeRentals: bookings.filter(b => b.renter?._id === currentUserId && b.status === 'Approved').length,
-      earnings: asLender.filter(b => b.status === 'Approved').reduce((acc, curr) => acc + (curr.totalPrice || 0), 0),
+      earnings: asLender.filter(b => b.status === 'Approved').reduce((acc, curr) => acc + (curr.totalPrice?.total || 0), 0),
       trustScore: 4.9
     };
   }, [bookings, currentUserId]);
@@ -237,7 +237,7 @@ const Dashboard = () => {
                   <div className="flex xl:flex-col items-center xl:items-end justify-between w-full xl:w-[220px] gap-4">
                     <div className="text-left xl:text-right">
                       <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Total Value</p>
-                      <p className="text-2xl md:text-3xl font-black italic text-[#F2B82E]">₹{booking.totalPrice || 0}</p>
+                      <p className="text-2xl md:text-3xl font-black italic text-[#F2B82E]">₹{booking.totalPrice?.total || 0}</p>
                     </div>
 
                     <div className="flex items-center gap-2">

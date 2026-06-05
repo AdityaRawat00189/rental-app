@@ -17,6 +17,10 @@ const bookingSchema = new mongoose.Schema({
         required : true,
     },
 
+    totalPrice : {
+        total :{ type: Number, default: 0 },
+        securityDeposit : { type: Number, default: 0 },
+    },
     startDate : { // Pickup date
         type : Date,
         required : true,
@@ -47,9 +51,13 @@ const bookingSchema = new mongoose.Schema({
         default : 'Pending',
     },
     paymentStatus : {
-        type : String,
-        enum : ['Pending','Paid','Failed'],
-        default : 'Pending',
+        status : {
+            type : String,
+            enum : ['Pending','Paid','Failed'],
+            default : 'Pending',
+        },
+        ownerConfirmed: { type: Boolean, default: false },
+        renterConfirmed: { type: Boolean, default: false }
     },
 
     returnVerification: {
